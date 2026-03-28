@@ -1,0 +1,31 @@
+{
+  "tabs": {
+    "dashboard": "لوحة القيادة",
+    "clients": "العملاء",
+    "reminders": "التذكيرات"
+  },
+  "dashboard": {
+    "greeting": "صباح الخير،",
+    "overview": "نظرة عامة على لوحة القيادة",
+    "active_countdowns": "العد التنازلي النشط",
+    "upcoming_events": "الأحداث القادمة",
+    "see_all": "عرض الكل",
+    "no_date": "لم يتم تحديد موعد"
+  },
+  "clients": {
+    "title": "العملاء",
+    "loading": "جاري التحميل...",
+    "status": "الحالة: ",
+    "contact": "الاتصال: ",
+    "notes": "ملاحظات",
+    "add_note_placeholder": "إضافة ملاحظة...",
+    "add_button": "إضافة"
+  },
+  "reminders": {
+    "priority": "الأولوية: ",
+    "due": "تاريخ الاستحقاق: "
+  },
+  "common": {
+    "modal": "نافذة"
+  }
+}

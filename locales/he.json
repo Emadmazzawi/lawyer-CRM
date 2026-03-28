@@ -1,0 +1,31 @@
+{
+  "tabs": {
+    "dashboard": "לוח בקרה",
+    "clients": "לקוחות",
+    "reminders": "תזכורות"
+  },
+  "dashboard": {
+    "greeting": "בוקר טוב,",
+    "overview": "סקירת לוח בקרה",
+    "active_countdowns": "ספירות לאחור פעילות",
+    "upcoming_events": "אירועים קרובים",
+    "see_all": "ראה הכל",
+    "no_date": "לא נקבע תאריך"
+  },
+  "clients": {
+    "title": "לקוחות",
+    "loading": "טוען...",
+    "status": "סטטוס: ",
+    "contact": "ליצירת קשר: ",
+    "notes": "הערות",
+    "add_note_placeholder": "הוסף הערה...",
+    "add_button": "הוסף"
+  },
+  "reminders": {
+    "priority": "עדיפות: ",
+    "due": "בתאריך: "
+  },
+  "common": {
+    "modal": "מודאל"
+  }
+}

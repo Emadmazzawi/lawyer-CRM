@@ -1,0 +1,31 @@
+{
+  "tabs": {
+    "dashboard": "Dashboard",
+    "clients": "Clients",
+    "reminders": "Reminders"
+  },
+  "dashboard": {
+    "greeting": "Good morning,",
+    "overview": "Dashboard Overview",
+    "active_countdowns": "Active Countdowns",
+    "upcoming_events": "Upcoming Events",
+    "see_all": "See all",
+    "no_date": "No date set"
+  },
+  "clients": {
+    "title": "Clients",
+    "loading": "Loading...",
+    "status": "Status: ",
+    "contact": "Contact: ",
+    "notes": "Notes",
+    "add_note_placeholder": "Add a note...",
+    "add_button": "Add"
+  },
+  "reminders": {
+    "priority": "Priority: ",
+    "due": "Due: "
+  },
+  "common": {
+    "modal": "Modal"
+  }
+}
