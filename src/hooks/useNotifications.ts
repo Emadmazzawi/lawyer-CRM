@@ -13,7 +13,7 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export function useNotifications() {
+export function useNotifications(session: any) {
   const [expoPushToken, setExpoPushToken] = useState<string | undefined>('');
   const [notification, setNotification] = useState<Notifications.Notification | undefined>(undefined);
   const notificationListener = useRef<any>(null);
@@ -21,7 +21,9 @@ export function useNotifications() {
   const router = useRouter();
 
   useEffect(() => {
-    registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
+    if (session) {
+      registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
+    }
 
     notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
       setNotification(notification);
@@ -43,7 +45,7 @@ export function useNotifications() {
         responseListener.current.remove();
       }
     };
-  }, []);
+  }, [session]);
 
   return { expoPushToken, notification };
 }

@@ -33,7 +33,7 @@ export const updateProfile = async (userId: string, updates: ProfileUpdate) => {
 };
 
 // Insert is usually handled by a trigger, but provided for completeness
-export const createProfile = async (profile: Partial<Profile>) => {
+export const createProfile = async (profile: Partial<Profile> & { user_id: string }) => {
   const { data, error } = await supabase
     .from('profiles')
     .insert(profile)

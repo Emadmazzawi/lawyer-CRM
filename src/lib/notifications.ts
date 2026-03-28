@@ -2,6 +2,7 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
+import { supabase } from './supabase';
 import { updateProfile } from '../api/profiles';
 import { getCurrentUser } from '../api/auth';
 import { EventTask } from '../api/events_and_tasks';
@@ -43,6 +44,17 @@ export async function registerForPushNotificationsAsync() {
     // Save token to Supabase if user is logged in
     const { data: { user } } = await getCurrentUser();
     if (user && token) {
+      // Basic deduplication: clear this token from other users before updating
+      try {
+        await supabase
+          .from('profiles')
+          .update({ push_token: null })
+          .eq('push_token', token)
+          .neq('user_id', user.id);
+      } catch (err) {
+        console.warn('Failed to deduplicate token:', err);
+      }
+
       await updateProfile(user.id, { push_token: token });
     }
   } else {

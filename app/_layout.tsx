@@ -1,4 +1,5 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { ThemeProvider, DarkTheme, DefaultTheme } from '@react-navigation/native';
+import { LocalizationProvider } from '@/src/providers/LocalizationProvider';
 import { useFonts } from 'expo-font';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -55,7 +56,7 @@ function RootLayoutNav() {
   const router = useRouter();
 
   // Initialize notifications
-  useNotifications();
+  useNotifications(session);
 
   useEffect(() => {
     // Check initial session
@@ -87,16 +88,18 @@ function RootLayoutNav() {
   }, [session, initialized, segments]);
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)/register" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="create-client" options={{ title: 'Add Client', presentation: 'formSheet' }} />
-        <Stack.Screen name="create-event" options={{ title: 'Add Event/Task', presentation: 'formSheet' }} />
-        <Stack.Screen name="settings" options={{ title: 'Settings', presentation: 'card', animation: 'slide_from_right' }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-      </Stack>
-    </ThemeProvider>
+    <LocalizationProvider>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <Stack>
+          <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
+          <Stack.Screen name="(auth)/register" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="create-client" options={{ title: 'Add Client', presentation: 'formSheet' }} />
+          <Stack.Screen name="create-event" options={{ title: 'Add Event/Task', presentation: 'formSheet' }} />
+          <Stack.Screen name="settings" options={{ title: 'Settings', presentation: 'card', animation: 'slide_from_right' }} />
+          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+        </Stack>
+      </ThemeProvider>
+    </LocalizationProvider>
   );
 }
