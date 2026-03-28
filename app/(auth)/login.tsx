@@ -60,14 +60,17 @@ export default function LoginScreen() {
       style={[styles.container, { backgroundColor: theme.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-        <TouchableOpacity 
-          style={styles.settingsButton} 
-          onPress={() => router.push('/settings')}
-        >
-          <FontAwesome name="cog" size={24} color={theme.maroon} />
-        </TouchableOpacity>
+      <TouchableOpacity 
+        style={styles.settingsButton} 
+        onPress={() => {
+          console.log('Navigating to settings...');
+          router.push('/settings');
+        }}
+      >
+        <FontAwesome name="cog" size={28} color={theme.maroon} />
+      </TouchableOpacity>
 
+      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <View style={styles.logoContainer}>
             <FontAwesome name="balance-scale" size={50} color="#FFF" />
@@ -163,10 +166,11 @@ const styles = StyleSheet.create({
   },
   settingsButton: {
     position: 'absolute',
-    top: 50,
-    right: 24,
-    zIndex: 1,
-    padding: 8,
+    top: Platform.OS === 'web' ? 20 : 50,
+    right: 20,
+    zIndex: 9999,
+    padding: 15, // Larger touch target
+    backgroundColor: 'transparent',
   },
   header: {
     alignItems: 'center',
