@@ -96,6 +96,25 @@ const resources = {
       placeholders: {
         clientName: "e.g. John Doe",
         eventTitle: "e.g. Court Hearing Case #123"
+      },
+      auth: {
+        login: "Login",
+        register: "Register",
+        email: "Email Address",
+        password: "Password",
+        noAccount: "Don't have an account? Register",
+        hasAccount: "Already have an account? Login",
+        loginGuest: "Continue as Guest",
+        or: "OR",
+        welcome: "Welcome Back",
+        createAccount: "Create Your Account",
+        forgotPassword: "Forgot Password?",
+        resetLinkSent: "Reset link sent to your email!",
+        userNotFound: "Email or password not found. You need to sign up.",
+        sendReset: "Send Reset Link",
+        backToLogin: "Back to Login",
+        emailPlaceholder: "your@email.com",
+        passwordPlaceholder: "Minimum 6 characters"
       }
     }
   },
@@ -191,6 +210,25 @@ const resources = {
       placeholders: {
         clientName: "مثال: جون دو",
         eventTitle: "مثال: جلسة استماع المحكمة رقم 123"
+      },
+      auth: {
+        login: "تسجيل الدخول",
+        register: "إنشاء حساب",
+        email: "البريد الإلكتروني",
+        password: "كلمة المرور",
+        noAccount: "ليس لديك حساب؟ سجل الآن",
+        hasAccount: "لديك حساب بالفعل؟ سجل دخولك",
+        loginGuest: "الدخول كضيف",
+        or: "أو",
+        welcome: "مرحباً بعودتك",
+        createAccount: "أنشئ حسابك الجديد",
+        forgotPassword: "نسيت كلمة المرور؟",
+        resetLinkSent: "تم إرسال رابط إعادة التعيين لبريدك!",
+        userNotFound: "البريد أو كلمة المرور غير موجودين. تحتاج للتسجيل.",
+        sendReset: "إرسال رابط الإعادة",
+        backToLogin: "العودة لتسجيل الدخول",
+        emailPlaceholder: "example@email.com",
+        passwordPlaceholder: "6 أحرف كحد أدنى"
       }
     }
   },
@@ -286,6 +324,25 @@ const resources = {
       placeholders: {
         clientName: "לדוגמה: ישראל ישראלי",
         eventTitle: "לדוגמה: דיון בבית משפט #123"
+      },
+      auth: {
+        login: "התחברות",
+        register: "הרשמה",
+        email: "כתובת אימייל",
+        password: "סיסמה",
+        noAccount: "אין לך חשבון? הירשם עכשיו",
+        hasAccount: "כבר יש לך חשבון? התחבר עכשיו",
+        loginGuest: "המשך כאורח",
+        or: "או",
+        welcome: "ברוך השב",
+        createAccount: "צור את החשבון שלך",
+        forgotPassword: "שכחת סיסמה?",
+        resetLinkSent: "קישור לאיפוס נשלח למייל שלך!",
+        userNotFound: "האימייל או הסיסמה לא נמצאו. עליך להירשם.",
+        sendReset: "שלח קישור לאיפוס",
+        backToLogin: "חזרה להתחברות",
+        emailPlaceholder: "your@email.com",
+        passwordPlaceholder: "לפחות 6 תווים"
       }
     }
   }

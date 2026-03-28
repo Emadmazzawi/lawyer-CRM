@@ -37,3 +37,9 @@ export const signInAnonymously = async (): Promise<AuthResponse> => {
 export const getSession = async () => {
   return await supabase.auth.getSession();
 };
+
+export const resetPassword = async (email: string) => {
+  return await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: 'https://lawyer-crm-hcfq.vercel.app/(auth)/update-password',
+  });
+};

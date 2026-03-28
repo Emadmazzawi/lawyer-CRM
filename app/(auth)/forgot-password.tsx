@@ -1,43 +1,35 @@
 import React, { useState } from 'react';
-import { StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, Alert, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
 import { Text, View } from '@/components/Themed';
-import { signUp } from '@/src/api/auth';
-import { useRouter, Link } from 'expo-router';
+import { resetPassword } from '@/src/api/auth';
+import { useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
-import { Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
 
-export default function RegisterScreen() {
+export default function ForgotPasswordScreen() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { t } = useTranslation();
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme];
 
-  const handleRegister = async () => {
-    if (!email || !password || !fullName) return;
+  const handleReset = async () => {
+    if (!email) {
+      Alert.alert('Error', t('auth.emailPlaceholder'));
+      return;
+    }
     setLoading(true);
-    const { data, error } = await signUp({ 
-      email, 
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-        }
-      }
-    });
+    const { error } = await resetPassword(email);
     setLoading(false);
     
     if (error) {
-      Alert.alert('Registration Failed', error.message);
+      Alert.alert('Error', error.message);
     } else {
-      Alert.alert('Success', t('auth.resetLinkSent').replace('Reset', 'Activation')); // Or a generic success message
-      router.replace('/(auth)/login');
+      Alert.alert('Success', t('auth.resetLinkSent'));
+      router.back();
     }
   };
 
@@ -47,38 +39,24 @@ export default function RegisterScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-        <TouchableOpacity 
-          style={styles.settingsButton} 
-          onPress={() => router.push('/settings')}
-        >
-          <FontAwesome name="cog" size={24} color={theme.maroon} />
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <FontAwesome name="arrow-left" size={20} color={theme.maroon} />
         </TouchableOpacity>
 
         <View style={styles.header}>
-          <View style={styles.logoContainer}>
-            <FontAwesome name="user-plus" size={40} color="#FFF" />
+          <View style={styles.iconContainer}>
+            <FontAwesome name="lock" size={40} color="#FFF" />
           </View>
-          <Text style={[styles.title, { color: theme.text }]}>{t('auth.createAccount')}</Text>
-          <Text style={[styles.subtitle, { color: theme.text + '99' }]}>Join Maroon CRM today</Text>
+          <Text style={[styles.title, { color: theme.text }]}>{t('auth.forgotPassword')}</Text>
+          <Text style={[styles.subtitle, { color: theme.text + '99' }]}>{t('auth.enterEmail')}</Text>
         </View>
 
         <View style={styles.form}>
           <View style={styles.inputContainer}>
-            <FontAwesome name="user-o" size={18} color={theme.maroon} style={styles.inputIcon} />
-            <TextInput
-              style={[styles.input, { color: theme.text, borderColor: theme.maroonSoft, backgroundColor: theme.background }]}
-              placeholder={t('forms.clientName')}
-              placeholderTextColor="#999"
-              value={fullName}
-              onChangeText={setFullName}
-            />
-          </View>
-
-          <View style={styles.inputContainer}>
             <FontAwesome name="envelope-o" size={18} color={theme.maroon} style={styles.inputIcon} />
             <TextInput
               style={[styles.input, { color: theme.text, borderColor: theme.maroonSoft, backgroundColor: theme.background }]}
-              placeholder={t('auth.email')}
+              placeholder={t('auth.emailPlaceholder')}
               placeholderTextColor="#999"
               value={email}
               onChangeText={setEmail}
@@ -86,36 +64,22 @@ export default function RegisterScreen() {
               keyboardType="email-address"
             />
           </View>
-
-          <View style={styles.inputContainer}>
-            <FontAwesome name="lock" size={20} color={theme.maroon} style={styles.inputIcon} />
-            <TextInput
-              style={[styles.input, { color: theme.text, borderColor: theme.maroonSoft, backgroundColor: theme.background }]}
-              placeholder={t('auth.password')}
-              placeholderTextColor="#999"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
-          </View>
           
           <TouchableOpacity 
             style={[styles.button, { backgroundColor: theme.maroon }]} 
-            onPress={handleRegister}
+            onPress={handleReset}
             disabled={loading}
           >
             {loading ? (
               <ActivityIndicator color="#FFF" />
             ) : (
-              <Text style={styles.buttonText}>{t('auth.register')}</Text>
+              <Text style={styles.buttonText}>{t('auth.sendReset')}</Text>
             )}
           </TouchableOpacity>
 
-          <Link href="/(auth)/login" asChild>
-            <TouchableOpacity style={styles.link}>
-              <Text style={[styles.linkText, { color: theme.maroon }]}>{t('auth.hasAccount')}</Text>
-            </TouchableOpacity>
-          </Link>
+          <TouchableOpacity style={styles.link} onPress={() => router.back()}>
+            <Text style={[styles.linkText, { color: theme.maroon }]}>{t('auth.backToLogin')}</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -131,31 +95,30 @@ const styles = StyleSheet.create({
     padding: 24,
     justifyContent: 'center',
   },
-  settingsButton: {
+  backButton: {
     position: 'absolute',
-    top: 50,
-    right: 24,
+    top: 60,
+    left: 24,
     zIndex: 1,
-    padding: 8,
   },
   header: {
     alignItems: 'center',
     marginBottom: 40,
     backgroundColor: 'transparent',
   },
-  logoContainer: {
+  iconContainer: {
     width: 80,
     height: 80,
     borderRadius: 40,
     backgroundColor: '#800000',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
     shadowColor: '#800000',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.2,
     shadowRadius: 20,
-    elevation: 8,
+    elevation: 5,
   },
   title: {
     fontSize: 28,
@@ -165,8 +128,9 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    fontWeight: '500',
     textAlign: 'center',
+    marginTop: 8,
+    paddingHorizontal: 20,
   },
   form: {
     width: '100%',
@@ -174,18 +138,18 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     position: 'relative',
-    marginBottom: 16,
+    marginBottom: 20,
     backgroundColor: 'transparent',
   },
   inputIcon: {
     position: 'absolute',
     left: 16,
-    top: 16,
+    top: 18,
     zIndex: 1,
   },
   input: {
-    padding: 14,
-    paddingLeft: 46,
+    padding: 16,
+    paddingLeft: 48,
     borderRadius: 16,
     borderWidth: 1.5,
     fontSize: 16,
@@ -212,7 +176,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   linkText: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '600',
   },
 });
