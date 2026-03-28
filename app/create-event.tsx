@@ -92,10 +92,13 @@ export default function CreateEventScreen() {
 
   const renderWebDatePicker = () => (
     <RNView style={styles.webDateContainer}>
-      <RNView style={{ flex: 1 }}>
+      <RNView style={{ flex: 1, position: 'relative' }}>
         <Text style={[styles.microLabel, { color: theme.text }]}>{t('forms.date', 'Date')}</Text>
         <TextInput
-          style={[styles.webInput, { color: theme.text, borderColor: theme.maroonSoft, backgroundColor: theme.background }]}
+          style={[
+            styles.webInput, 
+            { color: theme.text, borderColor: theme.maroonSoft, backgroundColor: theme.background, cursor: 'pointer' }
+          ]}
           // @ts-ignore
           type="date"
           value={format(dueDate, 'yyyy-MM-dd')}
@@ -110,11 +113,15 @@ export default function CreateEventScreen() {
             }
           }}
         />
+        <FontAwesome name="calendar" size={16} color={theme.maroon} style={{ position: 'absolute', right: 14, top: 38, pointerEvents: 'none' }} />
       </RNView>
-      <RNView style={{ flex: 1 }}>
+      <RNView style={{ flex: 1, position: 'relative' }}>
         <Text style={[styles.microLabel, { color: theme.text }]}>{t('forms.time', 'Time')}</Text>
         <TextInput
-          style={[styles.webInput, { color: theme.text, borderColor: theme.maroonSoft, backgroundColor: theme.background }]}
+          style={[
+            styles.webInput, 
+            { color: theme.text, borderColor: theme.maroonSoft, backgroundColor: theme.background, cursor: 'pointer' }
+          ]}
           // @ts-ignore
           type="time"
           value={format(dueDate, 'HH:mm')}
@@ -129,6 +136,7 @@ export default function CreateEventScreen() {
             }
           }}
         />
+        <FontAwesome name="clock-o" size={16} color={theme.maroon} style={{ position: 'absolute', right: 14, top: 38, pointerEvents: 'none' }} />
       </RNView>
     </RNView>
   );
