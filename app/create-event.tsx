@@ -155,7 +155,11 @@ export default function CreateEventScreen() {
         <DateTimePicker
           value={dueDate}
           mode={pickerMode}
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          display={
+            pickerMode === 'date' 
+              ? (Platform.OS === 'ios' ? 'inline' : 'calendar') 
+              : 'spinner'
+          }
           onChange={onDateChange}
           minimumDate={new Date()}
           textColor={theme.text}
