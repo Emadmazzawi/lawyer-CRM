@@ -124,6 +124,10 @@ export const createRoutine = async (
 };
 
 export const deleteRoutine = async (id: string) => {
+  // First delete completions and steps to avoid foreign key or RLS cascade issues
+  await supabase.from('routine_completions').delete().eq('routine_id', id);
+  await supabase.from('routine_steps').delete().eq('routine_id', id);
+
   // @ts-ignore
   return await supabase
     .from('routines')

@@ -108,7 +108,7 @@ export default function CreateRoutineScreen() {
           <TouchableOpacity onPress={() => router.back()}>
             <FontAwesome name="times" size={22} color={theme.text} />
           </TouchableOpacity>
-          <View style={[styles.totalBadge, { backgroundColor: '#4A7BF7' }]}>
+          <View style={[styles.totalBadge, { backgroundColor: '#F3F4F6' }]}>
             <Text style={styles.totalBadgeText}>{totalMinutes}m total</Text>
           </View>
         </View>
@@ -116,7 +116,7 @@ export default function CreateRoutineScreen() {
         {/* Name */}
         <Text style={[styles.label, { color: theme.textSecondary }]}>Name</Text>
         <TextInput
-          style={[styles.nameInput, { color: theme.text, backgroundColor: theme.surfaceElevated }]}
+          style={[styles.nameInput, { color: theme.text }]}
           placeholder="Morning Routine"
           placeholderTextColor={theme.textMuted}
           value={title}
@@ -127,7 +127,7 @@ export default function CreateRoutineScreen() {
 
         {/* Schedule Card */}
         <Text style={[styles.label, { color: theme.textSecondary }]}>Schedule</Text>
-        <View style={[styles.scheduleCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+        <View style={styles.scheduleCard}>
 
           {/* Reminder Row */}
           <TouchableOpacity style={styles.scheduleRow} onPress={() => setShowTimePicker(!showTimePicker)}>
@@ -136,7 +136,7 @@ export default function CreateRoutineScreen() {
               <Text style={[styles.scheduleLabel, { color: theme.text }]}>Reminder</Text>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={[styles.scheduleValue, { color: reminderTime ? '#4A7BF7' : theme.textMuted }]}>
+              <Text style={[styles.scheduleValue, { color: reminderTime ? '#111827' : theme.textMuted }]}>
                 {reminderTime ? format(reminderTime, 'h:mm a') : 'None'}
               </Text>
               <FontAwesome name="angle-right" size={18} color={theme.textMuted} style={{ marginLeft: 8 }} />
@@ -153,7 +153,7 @@ export default function CreateRoutineScreen() {
                 textColor={theme.text}
               />
               {Platform.OS === 'ios' && (
-                <TouchableOpacity onPress={confirmIOSTime} style={{ alignSelf: 'center', paddingVertical: 8, paddingHorizontal: 24, backgroundColor: '#4A7BF7', borderRadius: 20, marginBottom: 8 }}>
+                <TouchableOpacity onPress={confirmIOSTime} style={{ alignSelf: 'center', paddingVertical: 8, paddingHorizontal: 24, backgroundColor: '#111827', borderRadius: 20, marginBottom: 8 }}>
                   <Text style={{ color: '#FFF', fontFamily: 'Inter_700Bold', fontSize: 14 }}>Confirm</Text>
                 </TouchableOpacity>
               )}
@@ -174,7 +174,7 @@ export default function CreateRoutineScreen() {
             <Switch
               value={alarmEnabled}
               onValueChange={setAlarmEnabled}
-              trackColor={{ false: theme.border, true: '#4A7BF7' }}
+              trackColor={{ false: '#E5E7EB', true: '#111827' }}
               thumbColor="#FFF"
             />
           </View>
@@ -188,8 +188,7 @@ export default function CreateRoutineScreen() {
                 key={day}
                 style={[
                   styles.dayPill,
-                  { borderColor: theme.border },
-                  activeDays.includes(day) && { backgroundColor: '#4A7BF7', borderColor: '#4A7BF7' },
+                  activeDays.includes(day) && { backgroundColor: '#111827', borderColor: '#111827' },
                 ]}
                 onPress={() => toggleDay(day)}
               >
@@ -214,7 +213,7 @@ export default function CreateRoutineScreen() {
             <Switch
               value={isFlexible}
               onValueChange={setIsFlexible}
-              trackColor={{ false: theme.border, true: '#4A7BF7' }}
+              trackColor={{ false: '#E5E7EB', true: '#111827' }}
               thumbColor="#FFF"
             />
           </View>
@@ -227,7 +226,7 @@ export default function CreateRoutineScreen() {
         </View>
 
         {steps.map((step, index) => (
-          <View key={index} style={[styles.stepItem, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+          <View key={index} style={styles.stepItem}>
             <Text style={styles.stepEmoji}>{step.emoji}</Text>
             <View style={{ flex: 1, backgroundColor: 'transparent' }}>
               <Text style={[styles.stepTitle, { color: theme.text }]}>{step.title}</Text>
@@ -241,7 +240,7 @@ export default function CreateRoutineScreen() {
 
         {/* Add Step (dashed) */}
         <TouchableOpacity
-          style={[styles.addStepDashed, { borderColor: theme.border }]}
+          style={styles.addStepDashed}
           onPress={() => setShowStepModal(true)}
         >
           <FontAwesome name="plus" size={14} color={theme.textMuted} style={{ marginRight: 8 }} />
@@ -252,7 +251,7 @@ export default function CreateRoutineScreen() {
 
       {/* Bottom CTA */}
       <TouchableOpacity
-        style={[styles.createButton, { backgroundColor: '#4A7BF7' }]}
+        style={styles.createButton}
         onPress={handleSave}
         disabled={loading}
       >
@@ -288,8 +287,8 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.pill,
   },
   totalBadgeText: {
-    fontFamily: Fonts.bold,
-    color: '#FFF',
+    fontFamily: Fonts.semiBold,
+    color: '#111827',
     fontSize: 13,
   },
   label: {
@@ -301,7 +300,10 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.medium,
     fontSize: 18,
     padding: Spacing.md,
-    borderRadius: BorderRadius.lg,
+    borderRadius: 16,
+    backgroundColor: '#F9FAFB',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
     marginBottom: 4,
   },
   charCount: {
@@ -311,8 +313,10 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
   },
   scheduleCard: {
-    borderRadius: BorderRadius.xl,
+    borderRadius: 20,
     borderWidth: 1,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#FFFFFF',
     padding: Spacing.md,
     marginBottom: Spacing.lg,
   },
@@ -351,6 +355,8 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: BorderRadius.pill,
     borderWidth: 1,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#FFFFFF',
   },
   dayPillText: {
     fontFamily: Fonts.bold,
@@ -385,8 +391,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: Spacing.md,
-    borderRadius: BorderRadius.lg,
+    borderRadius: 16,
     borderWidth: 1,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#FFFFFF',
     marginBottom: Spacing.sm,
   },
   stepEmoji: {
@@ -406,9 +414,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.lg,
+    borderRadius: 16,
     borderWidth: 1.5,
     borderStyle: 'dashed',
+    borderColor: '#D1D5DB',
+    backgroundColor: '#F9FAFB',
     marginBottom: Spacing.lg,
   },
   addStepText: {
@@ -422,10 +432,11 @@ const styles = StyleSheet.create({
     right: Spacing.lg,
     paddingVertical: 18,
     borderRadius: BorderRadius.pill,
+    backgroundColor: '#111827',
     alignItems: 'center',
-    shadowColor: '#4A7BF7',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
     shadowRadius: 12,
     elevation: 8,
   },

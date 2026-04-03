@@ -368,12 +368,13 @@ i18n
 // Load saved language and apply RTL if we are in a browser/app environment
 if (typeof window !== 'undefined') {
   AsyncStorage.getItem(LANGUAGE_KEY).then((savedLanguage) => {
-    if (savedLanguage && savedLanguage !== i18n.language) {
-      i18n.changeLanguage(savedLanguage);
-      const isRTL = savedLanguage === 'ar' || savedLanguage === 'he';
-      if (I18nManager.isRTL !== isRTL) {
-        I18nManager.forceRTL(isRTL);
-      }
+    const langToUse = savedLanguage || 'en';
+    if (langToUse !== i18n.language) {
+      i18n.changeLanguage(langToUse);
+    }
+    const isRTL = langToUse === 'ar' || langToUse === 'he';
+    if (I18nManager.isRTL !== isRTL) {
+      I18nManager.forceRTL(isRTL);
     }
   }).catch(err => {
     console.error('Error loading saved language:', err);

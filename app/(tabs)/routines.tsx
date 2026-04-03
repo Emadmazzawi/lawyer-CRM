@@ -90,18 +90,19 @@ export default function RoutinesScreen() {
     const startTime = nextRoutine.reminder_time || format(new Date(), 'h:mm a');
     
     return (
-      <View style={styles.blueCard}>
-        <View style={styles.blueCardHeader}>
-          <Text style={styles.blueCardTime}>
+      <View style={styles.primaryCard}>
+        <View style={styles.primaryCardHeader}>
+          <Text style={styles.primaryCardTime}>
             {startTime}
           </Text>
         </View>
-        <Text style={styles.blueCardTitle}>{nextRoutine.title}</Text>
+        <Text style={styles.primaryCardTitle}>{nextRoutine.title}</Text>
         <TouchableOpacity
           style={styles.quickStartBtn}
+          activeOpacity={0.8}
           onPress={() => router.push(`/run-routine/${nextRoutine.id}`)}
         >
-          <Text style={styles.quickStartText}>QUICK-START</Text>
+          <Text style={styles.quickStartText}>Quick Start</Text>
         </TouchableOpacity>
       </View>
     );
@@ -111,7 +112,7 @@ export default function RoutinesScreen() {
     const completed = isCompletedToday(item.id);
     return (
       <View
-        style={[styles.checkItem, { backgroundColor: theme.surface, borderColor: theme.border }]}
+        style={[styles.checkItem, { backgroundColor: theme.surface }]}
       >
         {/* Tappable check area (circle + title) */}
         <TouchableOpacity
@@ -121,10 +122,10 @@ export default function RoutinesScreen() {
         >
           <View style={[
             styles.checkCircle,
-            { borderColor: completed ? theme.success : theme.border },
-            completed && { backgroundColor: theme.success },
+            { borderColor: completed ? '#111827' : '#E5E7EB' },
+            completed && { backgroundColor: '#111827' },
           ]}>
-            {completed && <FontAwesome name="check" size={14} color="#FFF" />}
+            {completed && <FontAwesome name="check" size={12} color="#FFF" />}
           </View>
           <View style={{ flex: 1, backgroundColor: 'transparent' }}>
             <Text style={[
@@ -143,12 +144,14 @@ export default function RoutinesScreen() {
         </TouchableOpacity>
 
         {/* Action buttons (independent, NOT inside the check's touch area) */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'transparent' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, backgroundColor: 'transparent' }}>
           <TouchableOpacity onPress={() => router.push(`/run-routine/${item.id}`)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <FontAwesome name="play-circle" size={28} color="#4A7BF7" />
+            <View style={styles.playButtonIcon}>
+              <FontAwesome name="play" size={12} color="#111827" style={{ marginLeft: 2 }} />
+            </View>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => handleDelete(item.id)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <FontAwesome name="trash-o" size={18} color={theme.textMuted} />
+            <FontAwesome name="trash-o" size={18} color="#D1D5DB" />
           </TouchableOpacity>
         </View>
       </View>
@@ -160,33 +163,35 @@ export default function RoutinesScreen() {
       {/* Title */}
       <View style={styles.header}>
         <Text style={[styles.headerTitle, { color: theme.text }]}>Routines</Text>
-        <TouchableOpacity onPress={() => router.push('/create-routine')}>
-          <FontAwesome name="plus-circle" size={28} color="#4A7BF7" />
+        <TouchableOpacity onPress={() => router.push('/create-routine')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+          <FontAwesome name="plus" size={22} color="#111827" />
         </TouchableOpacity>
       </View>
 
       {/* Scheduled / Flexible Toggle */}
-      <View style={[styles.tabRow, { backgroundColor: theme.surfaceElevated }]}>
+      <View style={[styles.tabRow, { backgroundColor: '#F3F4F6' }]}>
         <TouchableOpacity
           style={[styles.tabBtn, tab === 'scheduled' && styles.tabBtnActive]}
           onPress={() => setTab('scheduled')}
+          activeOpacity={0.8}
         >
-          <Text style={[styles.tabText, { color: theme.textSecondary }, tab === 'scheduled' && styles.tabTextActive]}>
-            Scheduled 🔁
+          <Text style={[styles.tabText, { color: '#6B7280' }, tab === 'scheduled' && styles.tabTextActive]}>
+            Scheduled
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tabBtn, tab === 'flexible' && styles.tabBtnActive]}
           onPress={() => setTab('flexible')}
+          activeOpacity={0.8}
         >
-          <Text style={[styles.tabText, { color: theme.textSecondary }, tab === 'flexible' && styles.tabTextActive]}>
-            Flexible ✂️
+          <Text style={[styles.tabText, { color: '#6B7280' }, tab === 'flexible' && styles.tabTextActive]}>
+            Flexible
           </Text>
         </TouchableOpacity>
       </View>
 
       {loading ? (
-        <ActivityIndicator size="large" color="#4A7BF7" style={{ marginTop: 50 }} />
+        <ActivityIndicator size="large" color="#111827" style={{ marginTop: 50 }} />
       ) : (
         <FlatList
           data={filteredRoutines}
@@ -232,28 +237,28 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontFamily: Fonts.black,
-    fontSize: 28,
-    letterSpacing: -0.5,
+    fontSize: 34,
+    letterSpacing: -1,
   },
   tabRow: {
     flexDirection: 'row',
     marginHorizontal: Spacing.lg,
-    borderRadius: BorderRadius.lg,
+    borderRadius: 16,
     padding: 4,
     marginBottom: Spacing.md,
   },
   tabBtn: {
     flex: 1,
     paddingVertical: 10,
-    borderRadius: BorderRadius.md,
+    borderRadius: 12,
     alignItems: 'center',
   },
   tabBtnActive: {
-    backgroundColor: '#FFF',
+    backgroundColor: '#FFFFFF',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
     elevation: 2,
   },
   tabText: {
@@ -261,7 +266,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   tabTextActive: {
-    color: '#111',
+    color: '#111827',
   },
   listContent: {
     paddingHorizontal: Spacing.lg,
@@ -279,46 +284,48 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 
-  // ── Blue Card ──────────────────
-  blueCard: {
-    backgroundColor: '#4A7BF7',
-    borderRadius: BorderRadius.xl,
+  // ── Primary Card ──────────────────
+  primaryCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
     padding: Spacing.lg,
     marginBottom: Spacing.lg,
-    shadowColor: '#4A7BF7',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.04,
     shadowRadius: 16,
-    elevation: 6,
+    elevation: 2,
   },
-  blueCardHeader: {
+  primaryCardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 8,
   },
-  blueCardTime: {
+  primaryCardTime: {
     fontFamily: Fonts.semiBold,
     fontSize: 13,
-    color: 'rgba(255,255,255,0.7)',
+    color: '#6B7280',
   },
-  blueCardTitle: {
+  primaryCardTitle: {
     fontFamily: Fonts.black,
-    fontSize: 22,
-    color: '#FFF',
-    marginBottom: Spacing.md,
+    fontSize: 24,
+    color: '#111827',
+    marginBottom: Spacing.xl,
+    letterSpacing: -0.5,
   },
   quickStartBtn: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingVertical: 12,
-    borderRadius: BorderRadius.pill,
+    backgroundColor: '#111827',
+    paddingVertical: 14,
+    borderRadius: 14,
     alignItems: 'center',
   },
   quickStartText: {
-    fontFamily: Fonts.black,
-    color: '#FFF',
-    fontSize: 14,
-    letterSpacing: 1,
+    fontFamily: Fonts.bold,
+    color: '#FFFFFF',
+    fontSize: 15,
   },
 
   // ── Check Items ──────────────────
@@ -326,27 +333,38 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: Spacing.md,
-    borderRadius: BorderRadius.lg,
+    borderRadius: 16,
     borderWidth: 1,
+    borderColor: '#E5E7EB',
     marginBottom: Spacing.sm,
   },
   checkCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    borderWidth: 2,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 1.5,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: Spacing.md,
   },
   checkTitle: {
     fontFamily: Fonts.semiBold,
-    fontSize: 15,
+    fontSize: 16,
+    color: '#111827',
   },
   checkSub: {
     fontFamily: Fonts.regular,
-    fontSize: 12,
+    fontSize: 13,
     marginTop: 2,
+    color: '#6B7280',
+  },
+  playButtonIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F3F4F6',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   // ── Empty ──────────────────

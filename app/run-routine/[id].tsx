@@ -126,7 +126,7 @@ export default function RunRoutineScreen() {
   // ── PREVIEW MODE ──
   if (mode === 'preview') {
     return (
-      <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <View style={[styles.container, { backgroundColor: '#FFFFFF' }]}>
         {/* Close */}
         <View style={styles.previewHeader}>
           <TouchableOpacity onPress={() => router.back()}>
@@ -138,12 +138,12 @@ export default function RunRoutineScreen() {
 
         {/* Big Emoji Ring */}
         <View style={styles.emojiRingContainer}>
-          <View style={[styles.emojiRing, { borderColor: '#4A7BF7' }]}>
-            <View style={[styles.emojiInner, { backgroundColor: '#E8EEFF' }]}>
+          <View style={[styles.emojiRing, { borderColor: '#E5E7EB' }]}>
+            <View style={[styles.emojiInner, { backgroundColor: '#F9FAFB' }]}>
               <Text style={styles.bigEmoji}>{firstEmoji}</Text>
             </View>
           </View>
-          <View style={[styles.startNowBadge, { backgroundColor: '#4A7BF7' }]}>
+          <View style={[styles.startNowBadge, { backgroundColor: '#111827' }]}>
             <Text style={styles.startNowText}>Start now</Text>
           </View>
         </View>
@@ -158,7 +158,7 @@ export default function RunRoutineScreen() {
           keyExtractor={(s) => s.id}
           style={styles.previewStepsList}
           renderItem={({ item }) => (
-            <View style={[styles.previewStepRow, { borderBottomColor: theme.border }]}>
+            <View style={[styles.previewStepRow, { borderBottomColor: '#E5E7EB' }]}>
               <Text style={styles.previewStepEmoji}>{item.emoji || '📝'}</Text>
               <View style={{ flex: 1, backgroundColor: 'transparent' }}>
                 <Text style={[styles.previewStepTitle, { color: theme.text }]}>{item.title}</Text>
@@ -169,17 +169,17 @@ export default function RunRoutineScreen() {
         />
 
         {/* Bottom Bar */}
-        <View style={[styles.bottomBar, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+        <View style={[styles.bottomBar, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB' }]}>
           <View style={{ flexDirection: 'row', gap: 10, marginBottom: Spacing.md }}>
-            <View style={[styles.bottomPill, { backgroundColor: theme.surfaceElevated, borderColor: theme.border }]}>
+            <View style={[styles.bottomPill, { backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' }]}>
               <Text style={styles.bottomPillEmoji}>{firstEmoji}</Text>
               <Text style={[styles.bottomPillText, { color: theme.text }]}>{routine.title}</Text>
             </View>
-            <View style={[styles.bottomPill, { backgroundColor: theme.surfaceElevated, borderColor: theme.border }]}>
+            <View style={[styles.bottomPill, { backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' }]}>
               <Text style={[styles.bottomPillText, { color: theme.textSecondary }]}>Finish at {finishTime}</Text>
             </View>
           </View>
-          <TouchableOpacity style={[styles.startButton, { backgroundColor: '#4A7BF7' }]} onPress={startRoutine}>
+          <TouchableOpacity style={[styles.startButton, { backgroundColor: '#111827' }]} onPress={startRoutine}>
             <Text style={styles.startButtonText}>START ROUTINE</Text>
           </TouchableOpacity>
         </View>
@@ -192,7 +192,7 @@ export default function RunRoutineScreen() {
   const progressText = `Step ${currentStepIndex + 1} / ${steps.length}`;
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background, justifyContent: 'space-between', padding: Spacing.lg }]}>
+    <View style={[styles.container, { backgroundColor: '#FFFFFF', justifyContent: 'space-between', padding: Spacing.lg }]}>
       <View style={{ alignItems: 'center', marginTop: 40 }}>
         <Text style={[styles.routineRunTitle, { color: theme.textSecondary }]}>{routine.title}</Text>
         <Text style={[styles.progressText, { color: theme.textMuted }]}>{progressText}</Text>
@@ -209,8 +209,8 @@ export default function RunRoutineScreen() {
       </View>
 
       <View style={{ alignItems: 'center' }}>
-        <View style={[styles.timerRing, { borderColor: timeLeft === 0 ? theme.success : '#4A7BF7', backgroundColor: theme.surface }]}>
-          <Text style={[styles.timerText, { color: timeLeft === 0 ? theme.success : theme.text }]}>{formatTime(timeLeft)}</Text>
+        <View style={[styles.timerRing, { borderColor: timeLeft === 0 ? theme.success : '#E5E7EB', backgroundColor: '#FFFFFF' }]}>
+          <Text style={[styles.timerText, { color: timeLeft === 0 ? theme.success : '#111827' }]}>{formatTime(timeLeft)}</Text>
         </View>
       </View>
 
@@ -223,7 +223,7 @@ export default function RunRoutineScreen() {
           <FontAwesome name="backward" size={24} color={theme.text} />
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.playPauseBtn, { backgroundColor: '#4A7BF7' }]} onPress={toggleTimer}>
+        <TouchableOpacity style={[styles.playPauseBtn, { backgroundColor: '#111827' }]} onPress={toggleTimer}>
           <FontAwesome
             name={timeLeft === 0 ? 'step-forward' : isRunning ? 'pause' : 'play'}
             size={28}
@@ -394,17 +394,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   timerRing: {
-    width: 260,
-    height: 260,
-    borderRadius: 130,
-    borderWidth: 4,
+    width: 280,
+    height: 280,
+    borderRadius: 140,
+    borderWidth: 2,
     justifyContent: 'center',
     alignItems: 'center',
   },
   timerText: {
     fontFamily: Fonts.black,
-    fontSize: 72,
-    letterSpacing: -2,
+    fontSize: 96,
+    letterSpacing: -3,
     fontVariant: ['tabular-nums'],
   },
   controlsContainer: {

@@ -1,5 +1,5 @@
-const tintColorLight = '#FF6B6B'; // Softer maroon/coral for general tint
-const tintColorDark = '#FF6B6B'; // Coral for dark mode
+const tintColorLight = '#4A7BF7'; // Changed to match routines tab blue
+const tintColorDark = '#4A7BF7'; // Changed to match routines tab blue
 
 export default {
   light: {
@@ -13,9 +13,9 @@ export default {
     border: '#E5E7EB',
     tabIconDefault: '#9CA3AF',
     tabIconSelected: tintColorLight,
-    maroon: '#8B1A1A', // classic maroon for branding when needed
-    maroonSoft: '#F8E7E7',
-    accentSoft: '#FEF2F2',
+    maroon: '#4A7BF7', // Blue to match routines tab
+    maroonSoft: '#E6EFFF', // Light blue background
+    accentSoft: '#E6EFFF',
     success: '#059669',
     warning: '#D97706',
     danger: '#DC2626',
@@ -31,9 +31,9 @@ export default {
     border: '#2A2A30',
     tabIconDefault: '#5B5B6E',
     tabIconSelected: tintColorDark,
-    maroon: '#FF6B6B', // shifted to coral for contrast in dark mode
-    maroonSoft: '#2D1515',
-    accentSoft: '#2D1515',
+    maroon: '#4A7BF7', // Blue to match routines tab
+    maroonSoft: '#182848', // Dark blue background
+    accentSoft: '#182848',
     success: '#34D399',
     warning: '#FBBF24',
     danger: '#F87171',
