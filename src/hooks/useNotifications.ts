@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
+import { Platform } from 'react-native';
 import { registerForPushNotificationsAsync, handleNotificationResponse } from '../lib/notifications';
 
 Notifications.setNotificationHandler({
@@ -25,17 +26,19 @@ export function useNotifications(session: any) {
       registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
     }
 
-    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
-      setNotification(notification);
-    });
+    if (Platform.OS !== 'web') {
+      notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+        setNotification(notification);
+      });
 
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-      const destination = handleNotificationResponse(response);
-      if (destination) {
-        // @ts-ignore
-        router.push(destination);
-      }
-    });
+      responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+        const destination = handleNotificationResponse(response);
+        if (destination) {
+          // @ts-ignore
+          router.push(destination);
+        }
+      });
+    }
 
     return () => {
       if (notificationListener.current) {

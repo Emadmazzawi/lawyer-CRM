@@ -10,6 +10,10 @@ import { EventTask } from '../api/events_and_tasks';
 export async function registerForPushNotificationsAsync() {
   let token;
 
+  if (Platform.OS === 'web') {
+    return token;
+  }
+
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('default', {
       name: 'default',
