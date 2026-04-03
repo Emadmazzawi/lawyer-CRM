@@ -110,46 +110,48 @@ export default function RoutinesScreen() {
   const renderRoutineCheckItem = ({ item }: { item: Routine }) => {
     const completed = isCompletedToday(item.id);
     return (
-      <TouchableOpacity
+      <View
         style={[styles.checkItem, { backgroundColor: theme.surface, borderColor: theme.border }]}
-        onPress={() => handleToggleCheck(item.id)}
-        activeOpacity={0.6}
       >
-        {/* Check circle */}
-        <View style={[
-          styles.checkCircle,
-          { borderColor: completed ? theme.success : theme.border },
-          completed && { backgroundColor: theme.success },
-        ]}>
-          {completed && <FontAwesome name="check" size={14} color="#FFF" />}
-        </View>
-
-        {/* Content */}
-        <View style={{ flex: 1, backgroundColor: 'transparent' }}>
-          <Text style={[
-            styles.checkTitle,
-            { color: theme.text },
-            completed && { textDecorationLine: 'line-through', color: theme.textMuted },
+        {/* Tappable check area (circle + title) */}
+        <TouchableOpacity
+          style={{ flexDirection: 'row', alignItems: 'center', flex: 1, backgroundColor: 'transparent' }}
+          onPress={() => handleToggleCheck(item.id)}
+          activeOpacity={0.6}
+        >
+          <View style={[
+            styles.checkCircle,
+            { borderColor: completed ? theme.success : theme.border },
+            completed && { backgroundColor: theme.success },
           ]}>
-            {item.title}
-          </Text>
-          {item.reminder_time && (
-            <Text style={[styles.checkSub, { color: theme.textMuted }]}>
-              {item.reminder_time}
+            {completed && <FontAwesome name="check" size={14} color="#FFF" />}
+          </View>
+          <View style={{ flex: 1, backgroundColor: 'transparent' }}>
+            <Text style={[
+              styles.checkTitle,
+              { color: theme.text },
+              completed && { textDecorationLine: 'line-through', color: theme.textMuted },
+            ]}>
+              {item.title}
             </Text>
-          )}
-        </View>
+            {item.reminder_time && (
+              <Text style={[styles.checkSub, { color: theme.textMuted }]}>
+                {item.reminder_time}
+              </Text>
+            )}
+          </View>
+        </TouchableOpacity>
 
-        {/* Actions */}
+        {/* Action buttons (independent, NOT inside the check's touch area) */}
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'transparent' }}>
-          <TouchableOpacity onPress={() => router.push(`/run-routine/${item.id}`)}>
+          <TouchableOpacity onPress={() => router.push(`/run-routine/${item.id}`)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
             <FontAwesome name="play-circle" size={28} color="#4A7BF7" />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => handleDelete(item.id)}>
+          <TouchableOpacity onPress={() => handleDelete(item.id)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
             <FontAwesome name="trash-o" size={18} color={theme.textMuted} />
           </TouchableOpacity>
         </View>
-      </TouchableOpacity>
+      </View>
     );
   };
 

@@ -83,9 +83,21 @@ export default function CreateRoutineScreen() {
     }
   };
 
-  const onTimeChange = (_event: any, selectedDate?: Date) => {
-    if (Platform.OS === 'android') setShowTimePicker(false);
-    if (selectedDate) setReminderTime(selectedDate);
+  const onTimeChange = (event: any, selectedDate?: Date) => {
+    // On Android, the picker auto-closes after selection or dismiss
+    if (Platform.OS === 'android') {
+      setShowTimePicker(false);
+      if (event.type === 'dismissed') return; // user pressed cancel
+    }
+    if (selectedDate) {
+      setReminderTime(selectedDate);
+      // On iOS, keep picker open until user scrolls away — close with a confirm button
+    }
+  };
+
+  const confirmIOSTime = () => {
+    setShowTimePicker(false);
+    if (!reminderTime) setReminderTime(new Date());
   };
 
   return (
@@ -118,7 +130,7 @@ export default function CreateRoutineScreen() {
         <View style={[styles.scheduleCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
 
           {/* Reminder Row */}
-          <TouchableOpacity style={styles.scheduleRow} onPress={() => setShowTimePicker(true)}>
+          <TouchableOpacity style={styles.scheduleRow} onPress={() => setShowTimePicker(!showTimePicker)}>
             <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'transparent' }}>
               <FontAwesome name="clock-o" size={18} color={theme.textSecondary} style={{ marginRight: 12 }} />
               <Text style={[styles.scheduleLabel, { color: theme.text }]}>Reminder</Text>
@@ -132,12 +144,20 @@ export default function CreateRoutineScreen() {
           </TouchableOpacity>
 
           {showTimePicker && (
-            <DateTimePicker
-              value={reminderTime || new Date()}
-              mode="time"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              onChange={onTimeChange}
-            />
+            <View style={{ backgroundColor: 'transparent' }}>
+              <DateTimePicker
+                value={reminderTime || new Date()}
+                mode="time"
+                display="spinner"
+                onChange={onTimeChange}
+                textColor={theme.text}
+              />
+              {Platform.OS === 'ios' && (
+                <TouchableOpacity onPress={confirmIOSTime} style={{ alignSelf: 'center', paddingVertical: 8, paddingHorizontal: 24, backgroundColor: '#4A7BF7', borderRadius: 20, marginBottom: 8 }}>
+                  <Text style={{ color: '#FFF', fontFamily: 'Inter_700Bold', fontSize: 14 }}>Confirm</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           )}
 
           <View style={[styles.divider, { backgroundColor: theme.border }]} />
