@@ -11,11 +11,19 @@ import i18n from '@/src/i18n/config';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import * as Updates from 'expo-updates';
+import { Appearance } from 'react-native';
+import { Fonts, BorderRadius, Spacing } from '@/constants/Theme';
 
 const LANGUAGES = [
   { label: 'English', value: 'en', flag: '🇬🇧' },
   { label: 'العربية', value: 'ar', flag: '🇸🇦' },
   { label: 'Hebrew', value: 'he', flag: '🇮🇱' },
+];
+
+const THEMES = [
+  { label: 'System Defaults', value: 'system', icon: 'desktop' },
+  { label: 'Light Mode', value: 'light', icon: 'sun-o' },
+  { label: 'Dark Obsidian', value: 'dark', icon: 'moon-o' },
 ];
 
 export default function SettingsScreen() {
@@ -25,12 +33,25 @@ export default function SettingsScreen() {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme];
   const [currentLang, setCurrentLang] = useState(i18n.language);
+  const [currentTheme, setCurrentTheme] = useState('system');
 
   useEffect(() => {
     navigation.setOptions({
       title: t('settings.title')
     });
+    loadThemePreference();
   }, [currentLang, t]);
+
+  const loadThemePreference = async () => {
+    try {
+      const storedTheme = await AsyncStorage.getItem('app_theme');
+      if (storedTheme) {
+        setCurrentTheme(storedTheme);
+      }
+    } catch (e) {
+      console.error('Failed to load theme preference', e);
+    }
+  };
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -62,8 +83,22 @@ export default function SettingsScreen() {
     }
   };
 
+  const changeTheme = async (themeValue: string) => {
+    try {
+      await AsyncStorage.setItem('app_theme', themeValue);
+      setCurrentTheme(themeValue);
+      if (themeValue === 'system') {
+        Appearance.setColorScheme(null as any);
+      } else {
+        Appearance.setColorScheme(themeValue as 'light' | 'dark');
+      }
+    } catch (e) {
+      console.error('Failed to change theme', e);
+    }
+  };
+
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={[styles.container, { backgroundColor: theme.background }]} contentContainerStyle={styles.content}>
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: theme.text }]}>{t('settings.language')}</Text>
         <View style={styles.languageGrid}>
@@ -71,13 +106,14 @@ export default function SettingsScreen() {
             <TouchableOpacity
               key={lang.value}
               style={[
-                styles.languageButton,
+                styles.optionButton,
+                { backgroundColor: theme.surface, borderColor: theme.border },
                 currentLang === lang.value && { backgroundColor: theme.maroon, borderColor: theme.maroon },
               ]}
               onPress={() => changeLanguage(lang.value)}
             >
-              <Text style={styles.flag}>{lang.flag}</Text>
-              <Text style={[styles.languageLabel, currentLang === lang.value && { color: '#FFF' }]}>
+              <Text style={styles.optionIconText}>{lang.flag}</Text>
+              <Text style={[styles.optionLabel, { color: theme.textSecondary }, currentLang === lang.value && { color: '#FFF' }]}>
                 {lang.label}
               </Text>
               {currentLang === lang.value && (
@@ -88,7 +124,34 @@ export default function SettingsScreen() {
         </View>
       </View>
 
-      <View style={styles.divider} />
+      <View style={[styles.divider, { backgroundColor: theme.border }]} />
+
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>Appearance</Text>
+        <View style={styles.optionsGrid}>
+          {THEMES.map((t_opt) => (
+            <TouchableOpacity
+              key={t_opt.value}
+              style={[
+                styles.optionButton,
+                { backgroundColor: theme.surface, borderColor: theme.border },
+                currentTheme === t_opt.value && { backgroundColor: theme.maroon, borderColor: theme.maroon },
+              ]}
+              onPress={() => changeTheme(t_opt.value)}
+            >
+              <FontAwesome name={t_opt.icon as any} size={18} color={currentTheme === t_opt.value ? '#FFF' : theme.textSecondary} style={{ marginEnd: 12, width: 20, textAlign: 'center' }} />
+              <Text style={[styles.optionLabel, { color: theme.textSecondary }, currentTheme === t_opt.value && { color: '#FFF' }]}>
+                {t_opt.label}
+              </Text>
+              {currentTheme === t_opt.value && (
+                <FontAwesome name="check-circle" size={16} color="#FFF" style={styles.checkIcon} />
+              )}
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      <View style={[styles.divider, { backgroundColor: theme.border }]} />
 
       <TouchableOpacity 
         style={[styles.logoutButton, { borderColor: theme.maroon }]}
@@ -104,43 +167,43 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FDFDFD',
   },
   content: {
-    padding: 24,
+    padding: Spacing.xl,
   },
   section: {
-    marginBottom: 30,
+    marginBottom: Spacing.lg,
     backgroundColor: 'transparent',
   },
   sectionTitle: {
+    fontFamily: Fonts.bold,
     fontSize: 14,
-    fontWeight: '700',
-    marginBottom: 16,
+    marginBottom: Spacing.md,
     textTransform: 'uppercase',
     letterSpacing: 1,
+  },
+  optionsGrid: {
+    gap: 12,
+    backgroundColor: 'transparent',
   },
   languageGrid: {
     gap: 12,
     backgroundColor: 'transparent',
   },
-  languageButton: {
+  optionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    borderRadius: 16,
-    borderWidth: 1.5,
-    borderColor: '#EEE',
-    backgroundColor: '#FFF',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
   },
-  flag: {
+  optionIconText: {
     fontSize: 20,
     marginEnd: 12,
   },
-  languageLabel: {
+  optionLabel: {
+    fontFamily: Fonts.semiBold,
     fontSize: 16,
-    fontWeight: '600',
-    color: '#444',
     flex: 1,
   },
   checkIcon: {
@@ -148,21 +211,20 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: '#EEE',
-    marginVertical: 30,
+    marginVertical: Spacing.xl,
   },
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 18,
-    borderRadius: 16,
-    borderWidth: 1.5,
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.pill,
+    borderWidth: 1,
     backgroundColor: 'transparent',
   },
   logoutText: {
+    fontFamily: Fonts.bold,
     fontSize: 16,
-    fontWeight: '700',
     marginStart: 12,
   },
 });

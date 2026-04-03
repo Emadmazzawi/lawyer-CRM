@@ -8,7 +8,12 @@ interface SkeletonProps {
   style?: ViewStyle;
 }
 
+import { useColorScheme } from '@/components/useColorScheme';
+import Colors from '@/constants/Colors';
+
 export const Skeleton: React.FC<SkeletonProps> = ({ width, height, borderRadius, style }) => {
+  const colorScheme = useColorScheme();
+  const theme = Colors[colorScheme ?? 'light'];
   const opacity = new Animated.Value(0.3);
 
   useEffect(() => {
@@ -37,6 +42,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({ width, height, borderRadius,
           height: (height || 20) as any,
           borderRadius: borderRadius || 4,
           opacity: opacity,
+          backgroundColor: theme.border, // dynamically use theme.border instead of hardcoded
         },
         style,
       ]}
@@ -46,6 +52,6 @@ export const Skeleton: React.FC<SkeletonProps> = ({ width, height, borderRadius,
 
 const styles = StyleSheet.create({
   skeleton: {
-    backgroundColor: '#E1E9EE',
+    // Background color is handled inline to support theming properly
   },
 });

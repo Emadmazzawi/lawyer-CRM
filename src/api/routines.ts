@@ -16,15 +16,17 @@ export type RoutineStep = {
   order_index: number;
 };
 
-export const fetchRoutines = async () => {
+export const fetchRoutines = async (): Promise<{ data: Routine[] | null, error: any }> => {
   // @ts-ignore
-  return await supabase
+  const { data, error } = await supabase
     .from('routines')
     .select('*')
     .order('created_at', { ascending: false });
+
+  return { data: data as any, error };
 };
 
-export const fetchRoutineById = async (id: string) => {
+export const fetchRoutineById = async (id: string): Promise<{ data: { routine: Routine, steps: RoutineStep[] } | null, error: any }> => {
   // @ts-ignore
   const { data: routine, error: routineError } = await supabase
     .from('routines')
@@ -32,9 +34,7 @@ export const fetchRoutineById = async (id: string) => {
     .eq('id', id)
     .single();
 
-  if (routineError) {
-    return { data: null, error: routineError };
-  }
+  if (routineError || !routine) return { data: null, error: routineError };
 
   // @ts-ignore
   const { data: steps, error: stepsError } = await supabase
@@ -43,11 +43,10 @@ export const fetchRoutineById = async (id: string) => {
     .eq('routine_id', id)
     .order('order_index', { ascending: true });
 
-  if (stepsError) {
-    return { data: null, error: stepsError };
-  }
-
-  return { data: { routine, steps }, error: null };
+  return { 
+    data: { routine: routine as any, steps: steps as any }, 
+    error: stepsError 
+  };
 };
 
 export const createRoutine = async (
@@ -62,17 +61,19 @@ export const createRoutine = async (
 
   // 1. Insert Routine
   // @ts-ignore
-  const { data: routineData, error: routineError } = await supabase
+  const { data, error: routineError } = await supabase
     .from('routines')
     .insert([
       { title, description, user_id: userData.user.id }
     ])
-    .select()
-    .single();
+    .select();
 
-  if (routineError || !routineData) {
-    return { data: null, error: routineError || new Error('Failed to create routine') };
+  if (routineError || !data || data.length === 0) {
+    console.error('--- [API Error] createRoutine failed:', routineError, 'Data:', data);
+    return { data: null, error: routineError || new Error('Failed to create routine. Did you run the SQL migration?') };
   }
+
+  const routineData = data[0];
 
   // 2. Insert Steps
   if (steps.length > 0) {
@@ -87,8 +88,7 @@ export const createRoutine = async (
       .insert(stepsWithRoutineId);
 
     if (stepsError) {
-      // It might be useful to rollback routine if steps fail, but Supabase JS doesn't do transactions nicely.
-      // So returning error here.
+      console.error('--- [API Error] createRoutine steps failed:', stepsError);
       return { data: null, error: stepsError };
     }
   }

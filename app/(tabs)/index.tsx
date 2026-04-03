@@ -11,42 +11,43 @@ import { Skeleton } from '@/components/Skeleton';
 import { EmptyState } from '@/components/EmptyState';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
+import { Fonts, BorderRadius, Spacing } from '@/constants/Theme';
 import { useTranslation } from 'react-i18next';
 
 import { useRouter, useFocusEffect } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
-const EventItem = React.memo(({ item, index, formatDate, onDelete, onComplete, t }: { item: Partial<EventTask>; index: number; formatDate: (date: string | null) => string; onDelete: (id: string) => void; onComplete: (id: string) => void; t: any }) => (
+const EventItem = React.memo(({ item, index, formatDate, onDelete, onComplete, theme, t }: { item: Partial<EventTask>; index: number; formatDate: (date: string | null) => string; onDelete: (id: string) => void; onComplete: (id: string) => void; theme: any; t: any }) => (
   <Animated.View 
     entering={FadeInDown.delay(index * 50).duration(500)}
     layout={Layout.springify()}
-    style={styles.card}
+    style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
   >
-    <View style={[styles.iconContainer, { backgroundColor: item.type === 'calendar_event' ? '#E3F2FD' : '#F3E5F5' }]}>
+    <View style={[styles.iconContainer, { backgroundColor: item.type === 'calendar_event' ? theme.maroonSoft : '#F3E5F5' }]}>
       <FontAwesome 
         name={item.type === 'calendar_event' ? 'calendar' : 'clock-o'} 
         size={20} 
-        color={item.type === 'calendar_event' ? '#1976D2' : '#7B1FA2'} 
+        color={item.type === 'calendar_event' ? theme.maroon : '#7B1FA2'} 
       />
     </View>
     <View style={styles.cardContent}>
-      <Text style={styles.title}>{item.title}</Text>
-      <Text style={styles.subtitle}>{formatDate(item.due_date ?? null)}</Text>
+      <Text style={[styles.title, { color: theme.text }]} numberOfLines={1}>{item.title}</Text>
+      <Text style={[styles.subtitle, { color: theme.textMuted }]}>{formatDate(item.due_date ?? null)}</Text>
     </View>
     
     <View style={styles.actionGroup}>
       <TouchableOpacity onPress={() => onComplete(item.id!)} style={styles.actionButton}>
-        <FontAwesome name="check-circle-o" size={22} color="#4CAF50" />
+        <FontAwesome name="check-circle-o" size={24} color={theme.success} />
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => onDelete(item.id!)} style={[styles.actionButton, { marginLeft: 15 }]}>
-        <FontAwesome name="trash-o" size={20} color="#FF5252" />
+      <TouchableOpacity onPress={() => onDelete(item.id!)} style={[styles.actionButton, { marginLeft: Spacing.md }]}>
+        <FontAwesome name="trash-o" size={22} color={theme.danger} />
       </TouchableOpacity>
     </View>
   </Animated.View>
 ));
 
-const CountdownItem = React.memo(({ item, index, formatDate, onDelete, onComplete, t }: { item: Partial<EventTask>; index: number; formatDate: (date: string | null) => string; onDelete: (id: string) => void; onComplete: (id: string) => void; t: any }) => {
+const CountdownItem = React.memo(({ item, index, formatDate, onDelete, onComplete, theme, t }: { item: Partial<EventTask>; index: number; formatDate: (date: string | null) => string; onDelete: (id: string) => void; onComplete: (id: string) => void; theme: any, t: any }) => {
   const daysLeft = useMemo(() => {
     if (!item.due_date) return null;
     const diff = differenceInDays(new Date(item.due_date), new Date());
@@ -56,19 +57,19 @@ const CountdownItem = React.memo(({ item, index, formatDate, onDelete, onComplet
   return (
     <Animated.View 
       entering={FadeInRight.delay(index * 75).duration(600)}
-      style={styles.countdownCard}
+      style={[styles.countdownCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
     >
       <View style={styles.countdownHeader}>
-        <Text style={styles.countdownTitle} numberOfLines={1}>{item.title}</Text>
+        <Text style={[styles.countdownTitle, { color: theme.text }]} numberOfLines={1}>{item.title}</Text>
         <TouchableOpacity onPress={() => onDelete(item.id!)}>
-           <FontAwesome name="times-circle" size={18} color="#FFCDD2" />
+           <FontAwesome name="times-circle" size={18} color={theme.textMuted} />
         </TouchableOpacity>
       </View>
       
       <View style={styles.countdownBody}>
         {daysLeft !== null && (
-          <View style={[styles.daysBadge, { backgroundColor: daysLeft <= 3 ? '#FFEBEE' : '#E8F5E9' }]}>
-            <Text style={[styles.daysText, { color: daysLeft <= 3 ? '#D32F2F' : '#2E7D32' }]}>
+          <View style={[styles.daysBadge, { backgroundColor: daysLeft <= 3 ? theme.accentSoft : theme.maroonSoft }]}>
+            <Text style={[styles.daysText, { color: daysLeft <= 3 ? theme.danger : theme.maroon }]}>
               {daysLeft < 0 ? t('dashboard.overdue') : t('dashboard.daysLeft', { days: daysLeft })}
             </Text>
           </View>
@@ -77,11 +78,11 @@ const CountdownItem = React.memo(({ item, index, formatDate, onDelete, onComplet
 
       <View style={styles.countdownFooter}>
         <View style={styles.countdownDateGroup}>
-          <FontAwesome name="calendar-o" size={12} color="#888" />
-          <Text style={styles.countdownDate}>{formatDate(item.due_date ?? null)}</Text>
+          <FontAwesome name="calendar-o" size={12} color={theme.textSecondary} />
+          <Text style={[styles.countdownDate, { color: theme.textMuted }]}>{formatDate(item.due_date ?? null)}</Text>
         </View>
         <TouchableOpacity onPress={() => onComplete(item.id!)}>
-          <FontAwesome name="check-circle" size={24} color="#4CAF50" />
+          <FontAwesome name="check-circle" size={24} color={theme.success} />
         </TouchableOpacity>
       </View>
     </Animated.View>
@@ -173,9 +174,10 @@ export default function DashboardScreen() {
       formatDate={formatDate} 
       onDelete={handleDelete}
       onComplete={handleComplete}
+      theme={theme}
       t={t}
     />
-  ), [formatDate, t]);
+  ), [formatDate, theme, t]);
 
   const renderCountdownItem = useCallback(({ item, index }: { item: Partial<EventTask>; index: number }) => (
     <CountdownItem 
@@ -184,9 +186,10 @@ export default function DashboardScreen() {
       formatDate={formatDate} 
       onDelete={handleDelete}
       onComplete={handleComplete}
+      theme={theme}
       t={t}
     />
-  ), [formatDate, t]);
+  ), [formatDate, theme, t]);
 
   const countdowns = useMemo(() => events.filter(e => e.type === 'countdown'), [events]);
   const upcomingEvents = useMemo(() => events.filter(e => e.type === 'calendar_event'), [events]);
@@ -206,33 +209,22 @@ export default function DashboardScreen() {
   );
 
   return (
-    <View style={styles.container}>
-      <Animated.View entering={FadeInDown.duration(800)} style={styles.header}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <Animated.View entering={FadeInDown.duration(800)} style={[styles.header, { backgroundColor: theme.background }]}>
         <View style={styles.headerTop}>
           <View>
-            <Text style={styles.greeting}>{greeting},</Text>
-            <Text style={styles.userName}>{profile?.full_name || 'Legal Professional'}</Text>
-          </View>
-          <View style={styles.headerActions}>
-            <TouchableOpacity 
-              style={styles.settingsButton}
-              onPress={() => router.push('/settings')}
-            >
-              <FontAwesome name="cog" size={26} color={theme.maroon} />
-            </TouchableOpacity>
-            <Pressable style={styles.profileButton}>
-              <FontAwesome name="user-circle-o" size={36} color={theme.maroon} />
-            </Pressable>
+            <Text style={[styles.greeting, { color: theme.textSecondary }]}>{greeting},</Text>
+            <Text style={[styles.userName, { color: theme.text }]}>{profile?.full_name || 'Legal Professional'}</Text>
           </View>
         </View>
       </Animated.View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>{t('dashboard.activeCountdowns')}</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>{t('dashboard.activeCountdowns')}</Text>
           {countdowns.length > 0 && (
             <Pressable onPress={() => router.push('/reminders')}>
-              <Text style={styles.seeAll}>{t('dashboard.seeFullList')}</Text>
+              <Text style={[styles.seeAll, { color: theme.textSecondary }]}>{t('dashboard.seeFullList')}</Text>
             </Pressable>
           )}
         </View>
@@ -264,10 +256,10 @@ export default function DashboardScreen() {
         )}
 
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>{t('dashboard.upcomingEvents')}</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>{t('dashboard.upcomingEvents')}</Text>
           {upcomingEvents.length > 0 && (
             <Pressable onPress={() => router.push('/completed')}>
-              <Text style={styles.seeAll}>{t('dashboard.pastArchive')}</Text>
+              <Text style={[styles.seeAll, { color: theme.textSecondary }]}>{t('dashboard.pastArchive')}</Text>
             </Pressable>
           )}
         </View>
@@ -314,119 +306,85 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FDFDFD',
   },
   header: {
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    paddingBottom: 24,
-    backgroundColor: '#FFF',
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
-    shadowColor: '#800000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.08,
-    shadowRadius: 20,
-    elevation: 8,
+    paddingTop: Spacing.xl,
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.md,
     zIndex: 10,
   },
   headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: 'transparent',
-  },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'transparent',
-  },
-  settingsButton: {
-    marginEnd: 20,
-    padding: 4,
+    alignItems: 'flex-start',
     backgroundColor: 'transparent',
   },
   greeting: {
+    fontFamily: Fonts.semiBold,
     fontSize: 14,
-    color: '#888',
     textTransform: 'uppercase',
     letterSpacing: 1,
-    fontWeight: '600',
   },
   userName: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: '#1A1A1A',
+    fontFamily: Fonts.black,
+    fontSize: 28,
     marginTop: 4,
-  },
-  profileButton: {
-    backgroundColor: 'transparent',
+    letterSpacing: -0.5,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    marginTop: 30,
-    marginBottom: 16,
+    paddingHorizontal: Spacing.lg,
+    marginTop: Spacing.xl,
+    marginBottom: Spacing.md,
     backgroundColor: 'transparent',
   },
   sectionTitle: {
+    fontFamily: Fonts.bold,
     fontSize: 20,
-    fontWeight: '800',
-    color: '#1A1A1A',
   },
   seeAll: {
+    fontFamily: Fonts.semiBold,
     fontSize: 14,
-    color: '#800000',
-    fontWeight: '700',
-    textAlign: 'left',
   },
   emptyContainer: {
-    paddingHorizontal: 20,
+    paddingHorizontal: Spacing.lg,
     backgroundColor: 'transparent',
   },
   horizontalList: {
-    paddingStart: 20,
+    paddingStart: Spacing.lg,
     paddingEnd: 10,
     backgroundColor: 'transparent',
   },
   countdownCard: {
     width: width * 0.7,
-    backgroundColor: '#FFF',
-    padding: 20,
-    borderRadius: 24,
-    marginEnd: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    elevation: 4,
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.lg,
+    marginEnd: Spacing.md,
     borderWidth: 1,
-    borderColor: '#F0F0F0',
   },
   countdownHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
+    alignItems: 'flex-start',
+    marginBottom: Spacing.sm,
     backgroundColor: 'transparent',
   },
   countdownTitle: {
     flex: 1,
+    fontFamily: Fonts.bold,
     fontSize: 16,
-    fontWeight: '800',
-    color: '#1A1A1A',
-    marginEnd: 8,
+    marginEnd: Spacing.sm,
   },
   daysBadge: {
-    paddingHorizontal: 8,
+    paddingHorizontal: Spacing.sm,
     paddingVertical: 4,
-    borderRadius: 8,
+    borderRadius: BorderRadius.md,
   },
   daysText: {
+    fontFamily: Fonts.bold,
     fontSize: 11,
-    fontWeight: '800',
     textTransform: 'uppercase',
   },
   countdownFooter: {
@@ -436,33 +394,25 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   countdownDate: {
+    fontFamily: Fonts.medium,
     fontSize: 13,
-    color: '#666',
-    marginStart: 8,
-    fontWeight: '500',
+    marginStart: Spacing.sm,
   },
   verticalList: {
-    paddingHorizontal: 20,
+    paddingHorizontal: Spacing.lg,
     paddingBottom: 100,
     backgroundColor: 'transparent',
   },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF',
-    padding: 16,
-    borderRadius: 20,
-    marginBottom: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.04,
-    shadowRadius: 10,
-    elevation: 3,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    marginBottom: Spacing.md,
     borderWidth: 1,
-    borderColor: '#F5F5F5',
   },
   countdownBody: {
-    marginBottom: 16,
+    marginBottom: Spacing.md,
     backgroundColor: 'transparent',
   },
   countdownDateGroup: {
@@ -481,42 +431,39 @@ const styles = StyleSheet.create({
   iconContainer: {
     width: 48,
     height: 48,
-    borderRadius: 14,
+    borderRadius: BorderRadius.md,
     justifyContent: 'center',
     alignItems: 'center',
   },
   cardContent: {
     flex: 1,
-    marginStart: 16,
+    marginStart: Spacing.md,
     backgroundColor: 'transparent',
   },
   title: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: '#1A1A1A',
+    fontFamily: Fonts.bold,
+    fontSize: 16,
   },
   subtitle: {
+    fontFamily: Fonts.medium,
     fontSize: 13,
-    color: '#666',
-    marginTop: 4,
-    fontWeight: '500',
+    marginTop: 2,
   },
   fabContainer: {
     position: 'absolute',
-    bottom: 30,
-    end: 30,
+    bottom: Spacing.xl,
+    end: Spacing.xl,
     zIndex: 100,
   },
   fab: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 60,
+    height: 60,
+    borderRadius: BorderRadius.pill,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#800000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 10,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
   },
 });

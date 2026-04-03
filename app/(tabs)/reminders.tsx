@@ -7,17 +7,20 @@ import { FontAwesome } from '@expo/vector-icons';
 import { EmptyState } from '@/components/EmptyState';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
+import { Fonts, BorderRadius, Spacing } from '@/constants/Theme';
 import { Skeleton } from '@/components/Skeleton';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
+import { TextInput } from 'react-native';
 
 export default function RemindersScreen() {
   const { t } = useTranslation();
   const [reminders, setReminders] = useState<Partial<EventTask>[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
   const colorScheme = useColorScheme();
-  const theme = Colors[colorScheme];
+  const theme = Colors[colorScheme ?? 'light'];
 
   useFocusEffect(
     useCallback(() => {
@@ -34,32 +37,34 @@ export default function RemindersScreen() {
     setLoading(false);
   };
 
+  const getPriorityColor = (priority?: string) => {
+    switch (priority) {
+      case 'Urgent': return theme.danger;
+      case 'High': return theme.warning;
+      case 'Medium': return theme.success;
+      default: return theme.border;
+    }
+  };
+
   const renderItem = useCallback(({ item }: { item: Partial<EventTask> }) => (
-    <View style={styles.card}>
-      <View style={[styles.priorityBadge, { backgroundColor: getPriorityColor(item.priority || undefined) }]}>
-        <Text style={styles.priorityText}>{item.priority ? t(`priorities.${item.priority.toLowerCase()}`) : t('priorities.medium')}</Text>
-      </View>
+    <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border, borderLeftWidth: 4, borderLeftColor: getPriorityColor(item.priority || undefined) }]}>
       <View style={styles.cardHeader}>
-        <Text style={styles.title}>{item.title}</Text>
+        <Text style={[styles.title, { color: theme.text }]}>{item.title}</Text>
         <FontAwesome name="bell-o" size={16} color={theme.maroon} />
       </View>
       <View style={styles.cardFooter}>
-        <FontAwesome name="calendar-o" size={12} color="#888" />
-        <Text style={styles.dateText}>
-          {item.due_date ? format(new Date(item.due_date), 'MMM d, yyyy') : 'No date'}
-        </Text>
+        <View style={styles.dateGroup}>
+          <FontAwesome name="calendar-o" size={12} color={theme.textSecondary} />
+          <Text style={[styles.dateText, { color: theme.textMuted }]}>
+            {item.due_date ? format(new Date(item.due_date), 'MMM d, yyyy') : 'No date'}
+          </Text>
+        </View>
+        <View style={[styles.priorityBadge, { backgroundColor: theme.surfaceElevated, borderWidth: 1, borderColor: theme.border }]}>
+          <Text style={[styles.priorityText, { color: getPriorityColor(item.priority || undefined) }]}>{item.priority ? t(`priorities.${item.priority.toLowerCase()}`) : t('priorities.medium')}</Text>
+        </View>
       </View>
     </View>
-  ), [theme]);
-
-  const getPriorityColor = (priority?: string) => {
-    switch (priority) {
-      case 'Urgent': return '#FFEBEE';
-      case 'High': return '#FFF3E0';
-      case 'Medium': return '#E3F2FD';
-      default: return '#F5F5F5';
-    }
-  };
+  ), [theme, t]);
 
   const LoadingSkeleton = () => (
     <View style={{ padding: 20 }}>
@@ -73,16 +78,31 @@ export default function RemindersScreen() {
     </View>
   );
 
+  const filteredReminders = reminders.filter(r => 
+    r.title?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>{t('reminders.title')}</Text>
+        <Text style={[styles.headerTitle, { color: theme.text }]}>{t('reminders.title')}</Text>
         <TouchableOpacity 
-          style={[styles.addButton, { backgroundColor: theme.maroon }]}
+          style={[styles.addButton, { backgroundColor: theme.maroon, shadowColor: theme.maroon }]}
           onPress={() => router.push('/create-event?type=reminder')}
         >
           <FontAwesome name="plus" size={18} color="#FFF" />
         </TouchableOpacity>
+      </View>
+
+      <View style={styles.searchContainer}>
+        <FontAwesome name="search" size={16} color={theme.textMuted} style={styles.searchIcon} />
+        <TextInput
+          style={[styles.searchInput, { color: theme.text, backgroundColor: theme.surfaceElevated, borderColor: theme.border }]}
+          placeholder="Search reminders..."
+          placeholderTextColor={theme.textMuted}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
       </View>
 
       {loading ? (
@@ -99,7 +119,7 @@ export default function RemindersScreen() {
         </View>
       ) : (
         <FlatList
-          data={reminders}
+          data={filteredReminders}
           renderItem={renderItem}
           keyExtractor={(item, index) => item.id || index.toString()}
           onRefresh={loadReminders}
@@ -114,93 +134,106 @@ export default function RemindersScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FDFDFD',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    marginBottom: 10,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.md,
+    marginBottom: Spacing.md,
     backgroundColor: 'transparent',
   },
   headerTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#1A1A1A',
+    fontFamily: Fonts.black,
+    fontSize: 28,
+    letterSpacing: -0.5,
   },
   addButton: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: BorderRadius.pill,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#800000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 4,
   },
+  searchContainer: {
+    position: 'relative',
+    paddingHorizontal: Spacing.lg,
+    marginBottom: Spacing.md,
+    backgroundColor: 'transparent',
+  },
+  searchIcon: {
+    position: 'absolute',
+    left: Spacing.lg + 16,
+    top: 14,
+    zIndex: 1,
+  },
+  searchInput: {
+    fontFamily: Fonts.medium,
+    padding: 12,
+    paddingLeft: 42,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    fontSize: 16,
+  },
   listContent: {
-    paddingHorizontal: 20,
+    paddingHorizontal: Spacing.lg,
     paddingBottom: 40,
   },
   emptyContainer: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: Spacing.lg,
     justifyContent: 'center',
     backgroundColor: 'transparent',
   },
   card: {
-    padding: 20,
-    borderRadius: 24,
-    backgroundColor: '#FFF',
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.04,
-    shadowRadius: 12,
-    elevation: 3,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    marginBottom: Spacing.md,
     borderWidth: 1,
-    borderColor: '#F5F5F5',
-  },
-  priorityBadge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-    marginBottom: 12,
-  },
-  priorityText: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#333',
-    textTransform: 'uppercase',
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 16,
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
     backgroundColor: 'transparent',
   },
   title: {
     flex: 1,
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1A1A1A',
+    fontFamily: Fonts.bold,
+    fontSize: 16,
     marginEnd: 10,
   },
   cardFooter: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'transparent',
+  },
+  dateGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: 'transparent',
   },
   dateText: {
+    fontFamily: Fonts.medium,
     fontSize: 13,
-    color: '#888',
-    marginStart: 8,
-    fontWeight: '500',
+    marginStart: 6,
+  },
+  priorityBadge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: BorderRadius.pill,
+  },
+  priorityText: {
+    fontFamily: Fonts.bold,
+    fontSize: 11,
+    textTransform: 'uppercase',
   },
 });

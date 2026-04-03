@@ -7,18 +7,30 @@ import { Skeleton } from '@/components/Skeleton';
 import { EmptyState } from '@/components/EmptyState';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
+import { Fonts, BorderRadius, Spacing } from '@/constants/Theme';
 import { FontAwesome } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { TextInput } from 'react-native';
 
-const ClientListItem = React.memo(({ item, onPress, t }: { item: Partial<Client>; onPress: (id: string) => void; t: any }) => (
+const getInitials = (name?: string) => {
+  if (!name) return 'C';
+  return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+};
+
+const ClientListItem = React.memo(({ item, onPress, theme, t }: { item: Partial<Client>; onPress: (id: string) => void; theme: any; t: any }) => (
   <TouchableOpacity 
-      style={styles.item}
+      style={[styles.item, { backgroundColor: theme.surface, borderColor: theme.border }]}
       onPress={() => onPress(item.id!)}
   >
     <View style={styles.itemContent}>
-        <Text style={styles.title}>{item.name}</Text>
-        <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
-            <Text style={styles.statusText}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'transparent' }}>
+          <View style={[styles.avatar, { backgroundColor: theme.maroonSoft }]}>
+            <Text style={[styles.avatarText, { color: theme.maroon }]}>{getInitials(item.name)}</Text>
+          </View>
+          <Text style={[styles.title, { color: theme.text }]}>{item.name}</Text>
+        </View>
+        <View style={[styles.statusBadge, { backgroundColor: theme.surfaceElevated, borderWidth: 1, borderColor: theme.border }]}>
+            <Text style={[styles.statusText, { color: theme.textSecondary }]}>
               {item.status ? t(`statuses.${item.status.replace(/\s+/g, '').replace(/^\w/, (c) => c.toLowerCase())}`) : ''}
             </Text>
         </View>
@@ -43,9 +55,10 @@ export default function ClientsScreen() {
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
   const colorScheme = useColorScheme();
-  const theme = Colors[colorScheme];
+  const theme = Colors[colorScheme ?? 'light'];
 
   useFocusEffect(
     useCallback(() => {
@@ -83,8 +96,12 @@ export default function ClientsScreen() {
   }, [router]);
 
   const renderItem = useCallback(({ item }: { item: Partial<Client> }) => (
-    <ClientListItem item={item} onPress={handlePress} t={t} />
-  ), [handlePress, t]);
+    <ClientListItem item={item} onPress={handlePress} theme={theme} t={t} />
+  ), [handlePress, theme, t]);
+
+  const filteredClients = clients.filter(c => 
+    c.name?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const LoadingSkeleton = () => (
     <RNView style={{ padding: 10 }}>
@@ -98,15 +115,26 @@ export default function ClientsScreen() {
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>{t('clients.title')}</Text>
+        <Text style={[styles.headerTitle, { color: theme.text }]}>{t('clients.title')}</Text>
         <TouchableOpacity 
-          style={[styles.addButton, { backgroundColor: theme.maroon }]}
+          style={[styles.addButton, { backgroundColor: theme.maroon, shadowColor: theme.maroon }]}
           onPress={() => router.push('/create-client')}
         >
           <FontAwesome name="plus" size={18} color="#FFF" />
         </TouchableOpacity>
+      </View>
+
+      <View style={styles.searchContainer}>
+        <FontAwesome name="search" size={16} color={theme.textMuted} style={styles.searchIcon} />
+        <TextInput
+          style={[styles.searchInput, { color: theme.text, backgroundColor: theme.surfaceElevated, borderColor: theme.border }]}
+          placeholder="Search clients..."
+          placeholderTextColor={theme.textMuted}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
       </View>
 
       {loading ? (
@@ -123,7 +151,7 @@ export default function ClientsScreen() {
         </View>
       ) : (
         <FlatList
-          data={clients}
+          data={filteredClients}
           renderItem={renderItem}
           keyExtractor={item => item.id!}
           contentContainerStyle={styles.listContent}
@@ -139,57 +167,68 @@ export default function ClientsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FDFDFD',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    marginBottom: 10,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.md,
+    marginBottom: Spacing.md,
     backgroundColor: 'transparent',
   },
   headerTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#1A1A1A',
+    fontFamily: Fonts.black,
+    fontSize: 28,
+    letterSpacing: -0.5,
   },
   addButton: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: BorderRadius.pill,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#800000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 4,
   },
+  searchContainer: {
+    position: 'relative',
+    paddingHorizontal: Spacing.lg,
+    marginBottom: Spacing.md,
+    backgroundColor: 'transparent',
+  },
+  searchIcon: {
+    position: 'absolute',
+    left: Spacing.lg + 16,
+    top: 14,
+    zIndex: 1,
+  },
+  searchInput: {
+    fontFamily: Fonts.medium,
+    padding: 12,
+    paddingLeft: 42,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    fontSize: 16,
+  },
   emptyContainer: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: Spacing.lg,
     justifyContent: 'center',
     backgroundColor: 'transparent',
   },
   listContent: {
-    paddingHorizontal: 10,
+    paddingHorizontal: Spacing.md,
     paddingBottom: 40,
   },
   item: {
-    padding: 16,
-    marginVertical: 8,
-    marginHorizontal: 10,
-    backgroundColor: '#FFF',
-    borderRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.04,
-    shadowRadius: 10,
-    elevation: 3,
+    padding: Spacing.md,
+    marginVertical: 4,
+    marginHorizontal: Spacing.xs,
+    borderRadius: BorderRadius.lg,
     borderWidth: 1,
-    borderColor: '#F5F5F5',
   },
   itemContent: {
     flexDirection: 'row',
@@ -197,27 +236,36 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'transparent',
   },
+  avatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: Spacing.sm,
+  },
+  avatarText: {
+    fontFamily: Fonts.bold,
+    fontSize: 13,
+  },
   title: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: '#1A1A1A',
+    fontFamily: Fonts.bold,
+    fontSize: 16,
   },
   statusBadge: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 10,
+    borderRadius: BorderRadius.pill,
   },
   statusText: {
+    fontFamily: Fonts.bold,
     fontSize: 11,
-    fontWeight: '800',
-    color: '#333',
     textTransform: 'uppercase',
   },
   skeletonItem: {
-    padding: 20,
-    marginVertical: 8,
+    padding: Spacing.lg,
+    marginVertical: 6,
     marginHorizontal: 10,
-    backgroundColor: '#FFF',
-    borderRadius: 20,
+    borderRadius: BorderRadius.lg,
   }
 });

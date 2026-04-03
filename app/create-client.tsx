@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigation } from 'expo-router';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
+import { Fonts, BorderRadius, Spacing } from '@/constants/Theme';
 
 const STATUS_OPTIONS: ClientStatus[] = ['Consultation', 'Awaiting Docs', 'In Court', 'Closed'];
 
@@ -28,7 +29,7 @@ export default function CreateClientScreen() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const colorScheme = useColorScheme();
-  const theme = Colors[colorScheme];
+  const theme = Colors[colorScheme ?? 'light'];
 
   const handleCreate = async () => {
     if (!name) {
@@ -65,57 +66,58 @@ export default function CreateClientScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={[styles.container, { backgroundColor: theme.background }]} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.label}>{t('forms.clientName')}</Text>
+        <Text style={[styles.label, { color: theme.text }]}>{t('forms.clientName')}</Text>
         <TextInput
-          style={[styles.input, { color: theme.text, borderColor: theme.maroonSoft }]}
+          style={[styles.input, { color: theme.text, borderColor: theme.border, backgroundColor: theme.surfaceElevated }]}
           placeholder={t('placeholders.clientName')}
-          placeholderTextColor="#999"
+          placeholderTextColor={theme.textMuted}
           value={name}
           onChangeText={setName}
         />
       </View>
 
-      <Text style={styles.label}>{t('forms.caseStatus')}</Text>
+      <Text style={[styles.label, { color: theme.text }]}>{t('forms.caseStatus')}</Text>
       <View style={styles.statusGrid}>
         {STATUS_OPTIONS.map((opt) => (
           <TouchableOpacity
             key={opt}
             style={[
               styles.statusButton,
+              { backgroundColor: theme.surface, borderColor: theme.border },
               status === opt && { backgroundColor: theme.maroon, borderColor: theme.maroon },
             ]}
             onPress={() => setStatus(opt)}
           >
-            <Text style={[styles.statusText, status === opt && { color: '#FFF' }]}>
+            <Text style={[styles.statusText, { color: theme.textSecondary }, status === opt && { color: '#FFF' }]}>
               {t(`statuses.${opt.replace(/\s+/g, '').replace(/^\w/, (c) => c.toLowerCase())}`)}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      <Text style={styles.label}>{t('forms.contactInfo')}</Text>
+      <Text style={[styles.label, { color: theme.text, marginTop: Spacing.md }]}>{t('forms.contactInfo')}</Text>
       <TextInput
-        style={[styles.input, { color: theme.text, borderColor: theme.maroonSoft }]}
+        style={[styles.input, { color: theme.text, borderColor: theme.border, backgroundColor: theme.surfaceElevated }]}
         placeholder={t('forms.email')}
-        placeholderTextColor="#999"
+        placeholderTextColor={theme.textMuted}
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
       />
       <TextInput
-        style={[styles.input, { color: theme.text, borderColor: theme.maroonSoft }]}
+        style={[styles.input, { color: theme.text, borderColor: theme.border, backgroundColor: theme.surfaceElevated }]}
         placeholder={t('forms.phone')}
-        placeholderTextColor="#999"
+        placeholderTextColor={theme.textMuted}
         value={phone}
         onChangeText={setPhone}
         keyboardType="phone-pad"
       />
 
       <TouchableOpacity
-        style={[styles.submitButton, { backgroundColor: theme.maroon }]}
+        style={[styles.submitButton, { backgroundColor: theme.maroon, shadowColor: theme.maroon }]}
         onPress={handleCreate}
         disabled={loading}
       >
@@ -132,65 +134,59 @@ export default function CreateClientScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF',
   },
   content: {
-    padding: 24,
+    padding: Spacing.xl,
   },
   header: {
-    marginBottom: 24,
+    marginBottom: Spacing.lg,
     backgroundColor: 'transparent',
   },
   label: {
+    fontFamily: Fonts.bold,
     fontSize: 14,
-    fontWeight: '700',
-    color: '#000',
     marginBottom: 10,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   input: {
-    backgroundColor: '#FDFDFD',
-    borderWidth: 1.5,
-    borderRadius: 14,
+    fontFamily: Fonts.medium,
+    borderWidth: 1,
+    borderRadius: BorderRadius.lg,
     padding: 16,
     fontSize: 16,
-    marginBottom: 20,
+    marginBottom: Spacing.lg,
   },
   statusGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 10,
-    marginBottom: 30,
+    marginBottom: Spacing.xl,
     backgroundColor: 'transparent',
   },
   statusButton: {
-    paddingHorizontal: 16,
+    paddingHorizontal: Spacing.md,
     paddingVertical: 10,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: '#EEE',
-    backgroundColor: '#FFF',
+    borderRadius: BorderRadius.pill,
+    borderWidth: 1,
   },
   statusText: {
+    fontFamily: Fonts.bold,
     fontSize: 14,
-    fontWeight: '600',
-    color: '#666',
   },
   submitButton: {
     padding: 20,
-    borderRadius: 16,
+    borderRadius: BorderRadius.pill,
     alignItems: 'center',
-    marginTop: 20,
-    shadowColor: '#800000',
+    marginTop: Spacing.lg,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.2,
     shadowRadius: 10,
     elevation: 6,
   },
   submitText: {
+    fontFamily: Fonts.bold,
     color: '#FFF',
     fontSize: 18,
-    fontWeight: '700',
   },
 });

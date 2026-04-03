@@ -80,21 +80,21 @@ export default function CreateRoutineScreen() {
   };
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.background }]} contentContainerStyle={styles.content}>
-      <Text style={[styles.label, { color: theme.text }]}>{t('routines.titleLabel', 'Routine Title')}</Text>
+    <ScrollView style={[styles.container, { backgroundColor: '#FAFAFA' }]} contentContainerStyle={styles.content}>
+      <Text style={[styles.label, { color: '#888' }]}>{t('routines.titleLabel', 'Routine Title')}</Text>
       <TextInput
-        style={[styles.input, { color: theme.text, borderColor: theme.maroonSoft, backgroundColor: theme.background }]}
+        style={[styles.input, { color: theme.text, backgroundColor: '#FFF' }]}
         placeholder={t('routines.titlePlaceholder', 'e.g., Morning Client Onboarding')}
-        placeholderTextColor="#999"
+        placeholderTextColor="#CCC"
         value={title}
         onChangeText={setTitle}
       />
 
-      <Text style={[styles.label, { color: theme.text }]}>{t('routines.descLabel', 'Description')}</Text>
+      <Text style={[styles.label, { color: '#888', marginTop: 10 }]}>{t('routines.descLabel', 'Description')}</Text>
       <TextInput
-        style={[styles.input, styles.textArea, { color: theme.text, borderColor: theme.maroonSoft, backgroundColor: theme.background }]}
+        style={[styles.input, styles.textArea, { color: theme.text, backgroundColor: '#FFF' }]}
         placeholder={t('routines.descPlaceholder', 'Routine details...')}
-        placeholderTextColor="#999"
+        placeholderTextColor="#CCC"
         value={description}
         onChangeText={setDescription}
         multiline
@@ -102,31 +102,31 @@ export default function CreateRoutineScreen() {
       />
 
       <View style={styles.stepsHeader}>
-        <Text style={[styles.label, { color: theme.text }]}>{t('routines.stepsLabel', 'Routine Steps')}</Text>
+        <Text style={[styles.label, { color: '#888' }]}>{t('routines.stepsLabel', 'Routine Steps')}</Text>
       </View>
 
       {steps.map((step, index) => (
-        <View key={index} style={[styles.stepItem, { borderColor: theme.maroonSoft, backgroundColor: theme.background }]}>
+        <View key={index} style={[styles.stepItem, { backgroundColor: '#FFF' }]}>
           <View style={styles.stepHeaderRow}>
-            <Text style={[styles.stepNumber, { color: theme.maroon }]}>{t('routines.step', 'Step')} {index + 1}</Text>
+            <Text style={[styles.stepNumber, { color: '#111' }]}>{t('routines.step', 'Step')} {index + 1}</Text>
             {steps.length > 1 && (
               <TouchableOpacity onPress={() => handleRemoveStep(index)}>
-                <FontAwesome name="times-circle" size={24} color="#d9534f" />
+                <FontAwesome name="times" size={16} color="#999" />
               </TouchableOpacity>
             )}
           </View>
           
           <TextInput
-            style={[styles.input, { color: theme.text, borderColor: '#EEE', marginBottom: 10 }]}
+            style={[styles.stepInput, { color: theme.text }]}
             placeholder={t('routines.stepTitlePlaceholder', 'Step Name (e.g., Send Intro Email)')}
-            placeholderTextColor="#999"
+            placeholderTextColor="#CCC"
             value={step.title}
             onChangeText={(text) => handleChangeStepTitle(text, index)}
           />
           <View style={styles.durationRow}>
-            <Text style={{ color: theme.text, marginRight: 10 }}>{t('routines.durationSeconds', 'Duration (seconds):')}</Text>
+            <Text style={{ color: '#888', marginRight: 10, fontSize: 13 }}>{t('routines.durationSeconds', 'Duration (sec):')}</Text>
             <TextInput
-              style={[styles.input, styles.durationInput, { color: theme.text, borderColor: '#EEE' }]}
+              style={[styles.stepInput, styles.durationInput, { color: theme.text }]}
               keyboardType="number-pad"
               value={step.duration_in_seconds.toString()}
               onChangeText={(text) => handleChangeStepDuration(text, index)}
@@ -139,19 +139,19 @@ export default function CreateRoutineScreen() {
         style={styles.addStepButton}
         onPress={handleAddStep}
       >
-        <FontAwesome name="plus" size={16} color={theme.maroon} style={{ marginRight: 8 }} />
-        <Text style={[styles.addStepText, { color: theme.maroon }]}>{t('routines.addStep', 'Add Another Step')}</Text>
+        <FontAwesome name="plus" size={14} color="#111" style={{ marginRight: 8 }} />
+        <Text style={[styles.addStepText, { color: '#111' }]}>{t('routines.addStep', 'Add Another Step')}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={[styles.submitButton, { backgroundColor: theme.maroon }]}
+        style={[styles.submitButton, { backgroundColor: '#111' }]}
         onPress={handleSave}
         disabled={loading}
       >
         {loading ? (
           <ActivityIndicator color="#FFF" />
         ) : (
-          <Text style={styles.submitText}>{t('forms.save', 'Save')}</Text>
+          <Text style={styles.submitText}>{t('forms.save', 'Save Routine')}</Text>
         )}
       </TouchableOpacity>
     </ScrollView>
@@ -162,32 +162,44 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: 24, paddingBottom: 60 },
   label: {
-    fontSize: 14,
-    fontWeight: '700',
-    marginBottom: 10,
+    fontSize: 12,
+    fontWeight: '600',
+    marginBottom: 8,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 1,
   },
   input: {
-    borderWidth: 1.5,
-    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#EFEFEF',
+    borderRadius: 16,
     padding: 16,
     fontSize: 16,
     marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.02,
+    shadowRadius: 4,
+    elevation: 1,
   },
   textArea: { height: 100, textAlignVertical: 'top' },
   stepsHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 20,
     marginBottom: 10,
   },
   stepItem: {
-    borderWidth: 1.5,
-    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#EFEFEF',
+    borderRadius: 16,
     padding: 16,
     marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.02,
+    shadowRadius: 4,
+    elevation: 1,
   },
   stepHeaderRow: {
     flexDirection: 'row',
@@ -195,30 +207,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
-  stepNumber: { fontSize: 16, fontWeight: 'bold' },
+  stepNumber: { fontSize: 14, fontWeight: '700' },
+  stepInput: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+    paddingVertical: 12,
+    fontSize: 15,
+    marginBottom: 10,
+  },
   durationRow: { flexDirection: 'row', alignItems: 'center' },
-  durationInput: { flex: 1, marginBottom: 0, padding: 12, height: 50 },
+  durationInput: { flex: 1, marginBottom: 0, textAlign: 'right' },
   addStepButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 14,
-    borderWidth: 1,
-    borderColor: 'transparent',
-    borderStyle: 'dashed',
-    borderRadius: 12,
-    marginBottom: 30,
+    backgroundColor: '#F0F0F0',
+    borderRadius: 24,
+    marginBottom: 40,
   },
-  addStepText: { fontSize: 16, fontWeight: '600' },
+  addStepText: { fontSize: 14, fontWeight: '600' },
   submitButton: {
-    padding: 20,
-    borderRadius: 16,
+    padding: 18,
+    borderRadius: 30,
     alignItems: 'center',
-    shadowColor: '#800000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    elevation: 6,
   },
-  submitText: { color: '#FFF', fontSize: 18, fontWeight: '700' },
+  submitText: { color: '#FFF', fontSize: 16, fontWeight: '700', letterSpacing: 0.5 },
 });

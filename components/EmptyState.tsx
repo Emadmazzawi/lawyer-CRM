@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { useColorScheme } from './useColorScheme';
 import Colors from '@/constants/Colors';
+import { Fonts, BorderRadius, Spacing } from '@/constants/Theme';
 
 interface EmptyStateProps {
   icon: React.ComponentProps<typeof FontAwesome>['name'];
@@ -39,8 +40,8 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 40,
-    borderRadius: 24,
+    padding: Spacing.xl,
+    borderRadius: BorderRadius.xl,
     backgroundColor: 'transparent',
   },
   iconContainer: {
@@ -49,25 +50,26 @@ const styles = StyleSheet.create({
     borderRadius: 40,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: Spacing.md,
   },
   title: {
+    fontFamily: Fonts.bold,
     fontSize: 20,
-    fontWeight: '700',
-    marginBottom: 8,
+    marginBottom: Spacing.sm,
     textAlign: 'center',
   },
   message: {
+    fontFamily: Fonts.medium,
     fontSize: 14,
     color: '#666',
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: Spacing.lg,
     lineHeight: 20,
   },
   button: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.pill,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
@@ -76,7 +78,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#FFF',
+    fontFamily: Fonts.semiBold,
     fontSize: 16,
-    fontWeight: '600',
   },
 });

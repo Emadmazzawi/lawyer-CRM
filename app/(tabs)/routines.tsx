@@ -57,24 +57,25 @@ export default function RoutinesScreen() {
   };
 
   const renderRoutine = ({ item }: { item: Routine }) => (
-    <View style={[styles.card, { backgroundColor: theme.background, borderColor: theme.maroonSoft }]}>
+    <View style={[styles.card, { backgroundColor: theme.background, borderBottomColor: '#EBEBEB' }]}>
       <View style={styles.cardHeader}>
-        <Text style={[styles.title, { color: theme.text }]}>{item.title}</Text>
-        <TouchableOpacity onPress={() => handleDelete(item.id)}>
-          <FontAwesome name="trash" size={20} color="red" />
+        <View style={styles.titleContainer}>
+          <Text style={[styles.title, { color: theme.text }]}>{item.title}</Text>
+          {item.description ? (
+            <Text style={[styles.description, { color: '#888' }]} numberOfLines={1}>
+              {item.description}
+            </Text>
+          ) : null}
+        </View>
+        <TouchableOpacity style={styles.deleteButton} onPress={() => handleDelete(item.id)}>
+          <FontAwesome name="trash" size={16} color="#d9534f" />
         </TouchableOpacity>
       </View>
-      {item.description ? (
-        <Text style={[styles.description, { color: theme.text }]} numberOfLines={2}>
-          {item.description}
-        </Text>
-      ) : null}
       
       <TouchableOpacity 
-        style={[styles.runButton, { backgroundColor: theme.maroon }]}
+        style={[styles.runButton, { backgroundColor: '#1A1A1A' }]}
         onPress={() => router.push(`/run-routine/${item.id}`)}
       >
-        <FontAwesome name="play" size={16} color="#FFF" style={{ marginRight: 8 }} />
         <Text style={styles.runButtonText}>{t('routines.run', 'Run Routine')}</Text>
       </TouchableOpacity>
     </View>
@@ -96,65 +97,60 @@ export default function RoutinesScreen() {
           keyExtractor={(item) => item.id}
           renderItem={renderRoutine}
           contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
         />
       )}
 
       <TouchableOpacity
-        style={[styles.fab, { backgroundColor: theme.maroon }]}
+        style={[styles.fab, { backgroundColor: '#111' }]}
         onPress={() => router.push('/create-routine')}
       >
-        <FontAwesome name="plus" size={24} color="#FFF" />
+        <FontAwesome name="plus" size={20} color="#FFF" />
       </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
   listContent: { padding: 16, paddingBottom: 100 },
   card: {
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    paddingVertical: 20,
+    borderBottomWidth: 1,
+    marginBottom: 0,
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
+    alignItems: 'flex-start',
+    marginBottom: 16,
   },
-  title: { fontSize: 18, fontWeight: 'bold' },
-  description: { fontSize: 14, marginBottom: 16, opacity: 0.8 },
+  titleContainer: { flex: 1, paddingRight: 10 },
+  title: { fontSize: 18, fontWeight: '700', letterSpacing: -0.5, marginBottom: 4 },
+  description: { fontSize: 14, lineHeight: 20 },
+  deleteButton: { padding: 8, backgroundColor: '#F9F9F9', borderRadius: 20 },
   runButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginTop: 8,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 24,
   },
-  runButtonText: { color: '#FFF', fontSize: 16, fontWeight: 'bold' },
+  runButtonText: { color: '#FFF', fontSize: 13, fontWeight: '600', letterSpacing: 0.3 },
   emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
-  emptyText: { fontSize: 16, textAlign: 'center' },
+  emptyText: { fontSize: 16, textAlign: 'center', color: '#666' },
   fab: {
     position: 'absolute',
     bottom: 30,
     right: 30,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 6,
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 4,
   },
 });

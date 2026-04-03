@@ -7,6 +7,7 @@ import { getCurrentUser } from '@/src/api/auth';
 import { FontAwesome } from '@expo/vector-icons';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
+import { Fonts, BorderRadius, Spacing } from '@/constants/Theme';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
@@ -119,9 +120,11 @@ export default function CreateEventScreen() {
           },
           style: {
             padding: '14px',
-            borderRadius: '14px',
-            border: `1.5px solid ${theme.maroonSoft}`,
-            backgroundColor: theme.background,
+            borderRadius: BorderRadius.lg,
+            borderWidth: 1,
+            borderStyle: 'solid',
+            borderColor: theme.border,
+            backgroundColor: theme.surfaceElevated,
             color: theme.text,
             fontSize: '16px',
             cursor: 'pointer',
@@ -151,9 +154,11 @@ export default function CreateEventScreen() {
           },
           style: {
             padding: '14px',
-            borderRadius: '14px',
-            border: `1.5px solid ${theme.maroonSoft}`,
-            backgroundColor: theme.background,
+            borderRadius: BorderRadius.lg,
+            borderWidth: 1,
+            borderStyle: 'solid',
+            borderColor: theme.border,
+            backgroundColor: theme.surfaceElevated,
             color: theme.text,
             fontSize: '16px',
             cursor: 'pointer',
@@ -169,7 +174,7 @@ export default function CreateEventScreen() {
   const renderNativeDatePicker = () => (
     <RNView style={styles.webDateContainer}>
       <TouchableOpacity 
-        style={[styles.dateTimeBox, { borderColor: theme.maroonSoft, backgroundColor: theme.background }]}
+        style={[styles.dateTimeBox, { borderColor: theme.border, backgroundColor: theme.surfaceElevated }]}
         onPress={() => openPicker('date')}
       >
         <FontAwesome name="calendar" size={18} color={theme.maroon} />
@@ -177,7 +182,7 @@ export default function CreateEventScreen() {
       </TouchableOpacity>
 
       <TouchableOpacity 
-        style={[styles.dateTimeBox, { borderColor: theme.maroonSoft, backgroundColor: theme.background }]}
+        style={[styles.dateTimeBox, { borderColor: theme.border, backgroundColor: theme.surfaceElevated }]}
         onPress={() => openPicker('time')}
       >
         <FontAwesome name="clock-o" size={18} color={theme.maroon} />
@@ -202,12 +207,12 @@ export default function CreateEventScreen() {
   );
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={[styles.container, { backgroundColor: theme.background }]} contentContainerStyle={styles.content}>
       <Text style={[styles.label, { color: theme.text }]}>{t('forms.title', 'TITLE')}</Text>
       <TextInput
-        style={[styles.input, { color: theme.text, borderColor: theme.maroonSoft, backgroundColor: theme.background }]}
+        style={[styles.input, { color: theme.text, borderColor: theme.border, backgroundColor: theme.surfaceElevated }]}
         placeholder={t('placeholders.eventTitle', 'e.g., Client Meeting')}
-        placeholderTextColor="#999"
+        placeholderTextColor={theme.textMuted}
         value={title}
         onChangeText={setTitle}
       />
@@ -219,6 +224,7 @@ export default function CreateEventScreen() {
             key={opt.value}
             style={[
               styles.typeButton,
+              { backgroundColor: theme.surface, borderColor: theme.border },
               type === opt.value && { backgroundColor: theme.maroon, borderColor: theme.maroon },
             ]}
             onPress={() => setType(opt.value)}
@@ -226,10 +232,10 @@ export default function CreateEventScreen() {
             <FontAwesome 
               name={opt.icon} 
               size={18} 
-              color={type === opt.value ? '#FFF' : '#666'} 
+              color={type === opt.value ? '#FFF' : theme.textSecondary} 
               style={{ marginBottom: 6 }}
             />
-            <Text style={[styles.typeText, type === opt.value && { color: '#FFF' }]}>
+            <Text style={[styles.typeText, { color: theme.textSecondary }, type === opt.value && { color: '#FFF' }]}>
               {t(`categories.${opt.value}`, opt.label)}
             </Text>
           </TouchableOpacity>
@@ -246,11 +252,12 @@ export default function CreateEventScreen() {
             key={p}
             style={[
               styles.priorityButton,
+              { backgroundColor: theme.surface, borderColor: theme.border },
               priority === p && { backgroundColor: theme.maroon, borderColor: theme.maroon },
             ]}
             onPress={() => setPriority(p)}
           >
-            <Text style={[styles.priorityText, priority === p && { color: '#FFF' }]}>
+            <Text style={[styles.priorityText, { color: theme.textSecondary }, priority === p && { color: '#FFF' }]}>
               {t(`priorities.${p.toLowerCase()}`, p)}
             </Text>
           </TouchableOpacity>
@@ -258,7 +265,7 @@ export default function CreateEventScreen() {
       </RNView>
 
       <TouchableOpacity
-        style={[styles.submitButton, { backgroundColor: theme.maroon }]}
+        style={[styles.submitButton, { backgroundColor: theme.maroon, shadowColor: theme.maroon }]}
         onPress={handleCreate}
         disabled={loading}
       >
@@ -275,109 +282,95 @@ export default function CreateEventScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF',
   },
   content: {
-    padding: 24,
+    padding: Spacing.xl,
   },
   label: {
+    fontFamily: Fonts.bold,
     fontSize: 14,
-    fontWeight: '700',
     marginBottom: 10,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   microLabel: {
+    fontFamily: Fonts.semiBold,
     fontSize: 12,
-    fontWeight: '600',
     marginBottom: 6,
-    color: '#666',
     marginLeft: 2,
   },
   input: {
-    borderWidth: 1.5,
-    borderRadius: 14,
+    fontFamily: Fonts.medium,
+    borderWidth: 1,
+    borderRadius: BorderRadius.lg,
     padding: 16,
     fontSize: 16,
-    marginBottom: 24,
+    marginBottom: Spacing.lg,
   },
   typeGrid: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 24,
+    marginBottom: Spacing.xl,
     gap: 12,
   },
   typeButton: {
     flex: 1,
-    padding: 12,
-    borderRadius: 16,
-    borderWidth: 1.5,
-    borderColor: '#EEE',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
     alignItems: 'center',
-    backgroundColor: '#FFF',
   },
   typeText: {
+    fontFamily: Fonts.bold,
     fontSize: 12,
-    fontWeight: '700',
-    color: '#666',
   },
   webDateContainer: {
     flexDirection: 'row',
     gap: 12,
-    marginBottom: 12,
-  },
-  webInput: {
-    borderWidth: 1.5,
-    borderRadius: 14,
-    padding: 14,
-    fontSize: 16,
+    marginBottom: Spacing.lg,
   },
   dateTimeBox: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 16,
-    borderRadius: 14,
-    borderWidth: 1.5,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
   },
   dateText: {
+    fontFamily: Fonts.semiBold,
     marginStart: 10,
     fontSize: 15,
-    fontWeight: '600',
   },
   priorityContainer: {
     flexDirection: 'row',
     gap: 10,
-    marginBottom: 30,
+    marginBottom: Spacing.xl,
   },
   priorityButton: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: '#EEE',
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.pill,
+    borderWidth: 1,
     alignItems: 'center',
-    backgroundColor: '#FFF',
   },
   priorityText: {
+    fontFamily: Fonts.bold,
     fontSize: 13,
-    fontWeight: '700',
-    color: '#666',
   },
   submitButton: {
     padding: 20,
-    borderRadius: 18,
+    borderRadius: BorderRadius.pill,
     alignItems: 'center',
-    shadowColor: '#800000',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.2,
     shadowRadius: 10,
     elevation: 6,
   },
   submitText: {
+    fontFamily: Fonts.bold,
     color: '#FFF',
     fontSize: 18,
-    fontWeight: '700',
   },
 });

@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/EmptyState';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
+import { Fonts, BorderRadius, Spacing } from '@/constants/Theme';
 import { Skeleton } from '@/components/Skeleton';
 import { format } from 'date-fns';
 
@@ -17,7 +18,7 @@ export default function CompletedScreen() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const colorScheme = useColorScheme();
-  const theme = Colors[colorScheme];
+  const theme = Colors[colorScheme ?? 'light'];
 
   useFocusEffect(
     useCallback(() => {
@@ -35,21 +36,21 @@ export default function CompletedScreen() {
   };
 
   const renderItem = useCallback(({ item }: { item: Partial<EventTask> }) => (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
       <View style={styles.cardHeader}>
         <View style={styles.titleContainer}>
-          <FontAwesome name="check-circle" size={18} color="#4CAF50" style={{ marginEnd: 10 }} />
-          <Text style={styles.title}>{item.title}</Text>
+          <FontAwesome name="check-circle" size={18} color={theme.success} style={{ marginEnd: 10 }} />
+          <Text style={[styles.title, { color: theme.textSecondary }]}>{item.title}</Text>
         </View>
-        <Text style={styles.typeLabel}>{item.type ? t(`categories.${item.type}`) : ''}</Text>
+        <Text style={[styles.typeLabel, { color: theme.textMuted }]}>{item.type ? t(`categories.${item.type}`) : ''}</Text>
       </View>
       <View style={styles.cardFooter}>
-        <Text style={styles.dateText}>
+        <Text style={[styles.dateText, { color: theme.textMuted }]}>
           {t('clientDetails.completedOn')} {item.due_date ? format(new Date(item.due_date), 'MMM d, yyyy') : 'No date'}
         </Text>
       </View>
     </View>
-  ), []);
+  ), [theme, t]);
 
   const LoadingSkeleton = () => (
     <View style={{ padding: 20 }}>
@@ -63,9 +64,9 @@ export default function CompletedScreen() {
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>{t('tabs.history')}</Text>
+        <Text style={[styles.headerTitle, { color: theme.text }]}>{t('tabs.history')}</Text>
       </View>
 
       {loading ? (
@@ -93,48 +94,40 @@ export default function CompletedScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FDFDFD',
   },
   header: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    marginBottom: 20,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.md,
+    marginBottom: Spacing.lg,
     backgroundColor: 'transparent',
   },
   headerTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#1A1A1A',
+    fontFamily: Fonts.black,
+    fontSize: 28,
+    letterSpacing: -0.5,
   },
   listContent: {
-    paddingHorizontal: 20,
+    paddingHorizontal: Spacing.lg,
     paddingBottom: 40,
   },
   emptyContainer: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: Spacing.lg,
     justifyContent: 'center',
     backgroundColor: 'transparent',
   },
   card: {
-    padding: 20,
-    borderRadius: 20,
-    backgroundColor: '#FFF',
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 10,
-    elevation: 2,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    marginBottom: Spacing.md,
     borderWidth: 1,
-    borderColor: '#FAFAFA',
-    opacity: 0.85,
+    opacity: 0.7, // Muted appearance for completed items
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: Spacing.sm,
     backgroundColor: 'transparent',
   },
   titleContainer: {
@@ -144,15 +137,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   title: {
+    fontFamily: Fonts.bold,
     fontSize: 16,
-    fontWeight: '600',
-    color: '#444',
     textDecorationLine: 'line-through',
   },
   typeLabel: {
+    fontFamily: Fonts.bold,
     fontSize: 10,
-    fontWeight: '700',
-    color: '#999',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -160,8 +151,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   dateText: {
+    fontFamily: Fonts.medium,
     fontSize: 12,
-    color: '#AAA',
-    fontWeight: '500',
   },
 });

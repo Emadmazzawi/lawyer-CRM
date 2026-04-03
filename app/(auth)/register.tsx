@@ -7,6 +7,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
+import { Fonts, BorderRadius, Spacing } from '@/constants/Theme';
 import { Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
 
 export default function RegisterScreen() {
@@ -58,20 +59,20 @@ export default function RegisterScreen() {
 
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
-          <View style={styles.logoContainer}>
-            <FontAwesome name="user-plus" size={40} color="#FFF" />
+          <View style={[styles.logoContainer, { backgroundColor: theme.maroon, shadowColor: theme.maroon }]}>
+            <FontAwesome name="user-plus" size={36} color="#FFF" />
           </View>
           <Text style={[styles.title, { color: theme.text }]}>{t('auth.createAccount')}</Text>
-          <Text style={[styles.subtitle, { color: theme.text + '99' }]}>Join Maroon CRM today</Text>
+          <Text style={[styles.subtitle, { color: theme.textSecondary }]}>Join Maroon CRM today</Text>
         </View>
 
         <View style={styles.form}>
           <View style={styles.inputContainer}>
             <FontAwesome name="user-o" size={18} color={theme.maroon} style={styles.inputIcon} />
             <TextInput
-              style={[styles.input, { color: theme.text, borderColor: theme.maroonSoft, backgroundColor: theme.background }]}
+              style={[styles.input, { color: theme.text, borderColor: theme.border, backgroundColor: theme.surfaceElevated }]}
               placeholder={t('forms.clientName')}
-              placeholderTextColor="#999"
+              placeholderTextColor={theme.textMuted}
               value={fullName}
               onChangeText={setFullName}
             />
@@ -80,9 +81,9 @@ export default function RegisterScreen() {
           <View style={styles.inputContainer}>
             <FontAwesome name="envelope-o" size={18} color={theme.maroon} style={styles.inputIcon} />
             <TextInput
-              style={[styles.input, { color: theme.text, borderColor: theme.maroonSoft, backgroundColor: theme.background }]}
+              style={[styles.input, { color: theme.text, borderColor: theme.border, backgroundColor: theme.surfaceElevated }]}
               placeholder={t('auth.email')}
-              placeholderTextColor="#999"
+              placeholderTextColor={theme.textMuted}
               value={email}
               onChangeText={setEmail}
               autoCapitalize="none"
@@ -93,9 +94,9 @@ export default function RegisterScreen() {
           <View style={styles.inputContainer}>
             <FontAwesome name="lock" size={20} color={theme.maroon} style={styles.inputIcon} />
             <TextInput
-              style={[styles.input, { color: theme.text, borderColor: theme.maroonSoft, backgroundColor: theme.background }]}
+              style={[styles.input, { color: theme.text, borderColor: theme.border, backgroundColor: theme.surfaceElevated }]}
               placeholder={t('auth.password')}
-              placeholderTextColor="#999"
+              placeholderTextColor={theme.textMuted}
               value={password}
               onChangeText={setPassword}
               secureTextEntry
@@ -103,7 +104,7 @@ export default function RegisterScreen() {
           </View>
           
           <TouchableOpacity 
-            style={[styles.button, { backgroundColor: theme.maroon }]} 
+            style={[styles.button, { backgroundColor: theme.maroon, shadowColor: theme.maroon }]} 
             onPress={handleRegister}
             disabled={loading}
           >
@@ -116,7 +117,7 @@ export default function RegisterScreen() {
 
           <Link href="/(auth)/login" asChild>
             <TouchableOpacity style={styles.link}>
-              <Text style={[styles.linkText, { color: theme.maroon }]}>{t('auth.hasAccount')}</Text>
+              <Text style={[styles.linkText, { color: theme.textSecondary }]}>{t('auth.hasAccount')}</Text>
             </TouchableOpacity>
           </Link>
         </View>
@@ -131,12 +132,12 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    padding: 24,
+    padding: Spacing.xl,
     justifyContent: 'center',
   },
   settingsButton: {
     position: 'absolute',
-    top: Platform.OS === 'web' ? 20 : 50,
+    top: Platform.OS === 'web' ? 20 : 60,
     right: 20,
     zIndex: 9999,
     padding: 15,
@@ -144,33 +145,33 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: Spacing.xxl,
     backgroundColor: 'transparent',
   },
   logoContainer: {
     width: 80,
     height: 80,
-    borderRadius: 40,
-    backgroundColor: '#800000',
+    borderRadius: BorderRadius.pill,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
-    shadowColor: '#800000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.2,
-    shadowRadius: 20,
+    marginBottom: Spacing.md,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
     elevation: 8,
   },
   title: {
+    fontFamily: Fonts.black,
     fontSize: 28,
-    fontWeight: '800',
-    marginTop: 10,
+    marginTop: Spacing.sm,
     textAlign: 'center',
+    letterSpacing: -0.5,
   },
   subtitle: {
+    fontFamily: Fonts.medium,
     fontSize: 16,
-    fontWeight: '500',
     textAlign: 'center',
+    marginTop: 4,
   },
   form: {
     width: '100%',
@@ -178,45 +179,45 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     position: 'relative',
-    marginBottom: 16,
+    marginBottom: Spacing.md,
     backgroundColor: 'transparent',
   },
   inputIcon: {
     position: 'absolute',
-    left: 16,
-    top: 16,
+    left: 18,
+    top: 18,
     zIndex: 1,
   },
   input: {
-    padding: 14,
-    paddingLeft: 46,
-    borderRadius: 16,
-    borderWidth: 1.5,
+    fontFamily: Fonts.medium,
+    padding: 16,
+    paddingLeft: 50,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
     fontSize: 16,
   },
   button: {
     padding: 18,
-    borderRadius: 16,
+    borderRadius: BorderRadius.pill,
     alignItems: 'center',
     marginTop: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
     elevation: 4,
   },
   buttonText: {
+    fontFamily: Fonts.bold,
     color: '#FFF',
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 16,
   },
   link: {
-    marginTop: 24,
+    marginTop: Spacing.lg,
     alignItems: 'center',
     backgroundColor: 'transparent',
   },
   linkText: {
+    fontFamily: Fonts.semiBold,
     fontSize: 15,
-    fontWeight: '600',
   },
 });

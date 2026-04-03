@@ -7,6 +7,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
+import { Fonts, BorderRadius, Spacing } from '@/constants/Theme';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -72,11 +73,11 @@ export default function LoginScreen() {
 
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
-          <View style={styles.logoContainer}>
-            <FontAwesome name="balance-scale" size={50} color="#FFF" />
+          <View style={[styles.logoContainer, { backgroundColor: theme.maroon, shadowColor: theme.maroon }]}>
+            <FontAwesome name="balance-scale" size={44} color="#FFF" />
           </View>
           <Text style={[styles.title, { color: theme.text }]}>Maroon CRM</Text>
-          <Text style={[styles.subtitle, { color: theme.text + '99' }]}>Secure Legal Organizer</Text>
+          <Text style={[styles.subtitle, { color: theme.textSecondary }]}>Modern Legal Organizer</Text>
         </View>
 
         <View style={styles.form}>
@@ -85,9 +86,9 @@ export default function LoginScreen() {
           <View style={styles.inputContainer}>
             <FontAwesome name="envelope-o" size={18} color={theme.maroon} style={styles.inputIcon} />
             <TextInput
-              style={[styles.input, { color: theme.text, borderColor: theme.maroonSoft, backgroundColor: theme.background }]}
+              style={[styles.input, { color: theme.text, borderColor: theme.border, backgroundColor: theme.surfaceElevated }]}
               placeholder={t('auth.email')}
-              placeholderTextColor="#999"
+              placeholderTextColor={theme.textMuted}
               value={email}
               onChangeText={setEmail}
               autoCapitalize="none"
@@ -98,9 +99,9 @@ export default function LoginScreen() {
           <View style={styles.inputContainer}>
             <FontAwesome name="lock" size={20} color={theme.maroon} style={styles.inputIcon} />
             <TextInput
-              style={[styles.input, { color: theme.text, borderColor: theme.maroonSoft, backgroundColor: theme.background }]}
+              style={[styles.input, { color: theme.text, borderColor: theme.border, backgroundColor: theme.surfaceElevated }]}
               placeholder={t('auth.password')}
-              placeholderTextColor="#999"
+              placeholderTextColor={theme.textMuted}
               value={password}
               onChangeText={setPassword}
               secureTextEntry
@@ -115,7 +116,7 @@ export default function LoginScreen() {
           </TouchableOpacity>
           
           <TouchableOpacity 
-            style={[styles.button, { backgroundColor: theme.maroon }]} 
+            style={[styles.button, { backgroundColor: theme.maroon, shadowColor: theme.maroon }]} 
             onPress={handleLogin}
             disabled={loading}
           >
@@ -128,25 +129,25 @@ export default function LoginScreen() {
 
           <Link href="/(auth)/register" asChild>
             <TouchableOpacity style={styles.link}>
-              <Text style={[styles.linkText, { color: theme.maroon }]}>{t('auth.noAccount')}</Text>
+              <Text style={[styles.linkText, { color: theme.textSecondary }]}>{t('auth.noAccount')}</Text>
             </TouchableOpacity>
           </Link>
 
           <View style={styles.divider}>
-            <View style={[styles.line, { backgroundColor: theme.maroonSoft }]} />
-            <Text style={styles.dividerText}>{t('auth.or')}</Text>
-            <View style={[styles.line, { backgroundColor: theme.maroonSoft }]} />
+            <View style={[styles.line, { backgroundColor: theme.border }]} />
+            <Text style={[styles.dividerText, { color: theme.textMuted }]}>{t('auth.or')}</Text>
+            <View style={[styles.line, { backgroundColor: theme.border }]} />
           </View>
 
           <TouchableOpacity 
-            style={[styles.guestButton, { borderColor: theme.maroon }]} 
+            style={[styles.guestButton, { borderColor: theme.border, backgroundColor: theme.surface }]} 
             onPress={handleGuestLogin}
             disabled={guestLoading}
           >
             {guestLoading ? (
-              <ActivityIndicator color={theme.maroon} />
+              <ActivityIndicator color={theme.text} />
             ) : (
-              <Text style={[styles.guestButtonText, { color: theme.maroon }]}>{t('auth.loginGuest')}</Text>
+              <Text style={[styles.guestButtonText, { color: theme.text }]}>{t('auth.loginGuest')}</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -161,50 +162,49 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    padding: 24,
+    padding: Spacing.xl,
     justifyContent: 'center',
   },
   settingsButton: {
     position: 'absolute',
-    top: Platform.OS === 'web' ? 20 : 50,
+    top: Platform.OS === 'web' ? 20 : 60,
     right: 20,
     zIndex: 9999,
-    padding: 15, // Larger touch target
+    padding: 15,
     backgroundColor: 'transparent',
   },
   header: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: Spacing.xxl,
     backgroundColor: 'transparent',
   },
   logoContainer: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    backgroundColor: '#800000',
+    width: 80,
+    height: 80,
+    borderRadius: BorderRadius.pill,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
-    shadowColor: '#800000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.2,
-    shadowRadius: 20,
+    marginBottom: Spacing.md,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
     elevation: 8,
   },
   title: {
-    fontSize: 32,
-    fontWeight: '900',
-    marginTop: 10,
+    fontFamily: Fonts.black,
+    fontSize: 28,
+    marginTop: Spacing.sm,
     letterSpacing: -0.5,
   },
   subtitle: {
+    fontFamily: Fonts.medium,
     fontSize: 16,
-    fontWeight: '500',
+    marginTop: 4,
   },
   welcomeText: {
+    fontFamily: Fonts.bold,
     fontSize: 22,
-    fontWeight: '700',
-    marginBottom: 24,
+    marginBottom: Spacing.lg,
     textAlign: 'center',
   },
   form: {
@@ -213,82 +213,79 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     position: 'relative',
-    marginBottom: 16,
+    marginBottom: Spacing.md,
     backgroundColor: 'transparent',
   },
   inputIcon: {
     position: 'absolute',
-    left: 16,
-    top: 16,
+    left: 18,
+    top: 18,
     zIndex: 1,
   },
   input: {
-    padding: 14,
-    paddingLeft: 46,
-    borderRadius: 16,
-    borderWidth: 1.5,
+    fontFamily: Fonts.medium,
+    padding: 16,
+    paddingLeft: 50,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
     fontSize: 16,
   },
   forgotAction: {
     alignItems: 'flex-end',
-    marginBottom: 20,
+    marginBottom: Spacing.xl,
     backgroundColor: 'transparent',
   },
   forgotText: {
+    fontFamily: Fonts.semiBold,
     fontSize: 14,
-    fontWeight: '600',
   },
   button: {
     padding: 18,
-    borderRadius: 16,
+    borderRadius: BorderRadius.pill,
     alignItems: 'center',
     marginTop: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
     elevation: 4,
   },
   buttonText: {
+    fontFamily: Fonts.bold,
     color: '#FFF',
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 16,
   },
   link: {
-    marginTop: 24,
+    marginTop: Spacing.lg,
     alignItems: 'center',
     backgroundColor: 'transparent',
   },
   linkText: {
+    fontFamily: Fonts.semiBold,
     fontSize: 15,
-    fontWeight: '600',
   },
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 32,
+    marginVertical: Spacing.xl,
     backgroundColor: 'transparent',
   },
   line: {
     flex: 1,
     height: 1,
-    opacity: 0.2,
   },
   dividerText: {
-    marginHorizontal: 16,
-    color: '#999',
+    fontFamily: Fonts.semiBold,
+    marginHorizontal: Spacing.md,
     fontSize: 13,
-    fontWeight: '700',
   },
   guestButton: {
     padding: 16,
-    borderRadius: 16,
+    borderRadius: BorderRadius.pill,
     alignItems: 'center',
-    borderWidth: 2,
-    backgroundColor: 'transparent',
+    borderWidth: 1,
   },
   guestButtonText: {
+    fontFamily: Fonts.bold,
     fontSize: 16,
-    fontWeight: '700',
   },
 });

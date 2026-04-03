@@ -7,6 +7,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
+import { Fonts, BorderRadius, Spacing } from '@/constants/Theme';
 
 export default function ForgotPasswordScreen() {
   const { t } = useTranslation();
@@ -44,20 +45,20 @@ export default function ForgotPasswordScreen() {
         </TouchableOpacity>
 
         <View style={styles.header}>
-          <View style={styles.iconContainer}>
-            <FontAwesome name="lock" size={40} color="#FFF" />
+          <View style={[styles.iconContainer, { backgroundColor: theme.maroon, shadowColor: theme.maroon }]}>
+            <FontAwesome name="lock" size={36} color="#FFF" />
           </View>
           <Text style={[styles.title, { color: theme.text }]}>{t('auth.forgotPassword')}</Text>
-          <Text style={[styles.subtitle, { color: theme.text + '99' }]}>{t('auth.enterEmail')}</Text>
+          <Text style={[styles.subtitle, { color: theme.textSecondary }]}>{t('auth.enterEmail')}</Text>
         </View>
 
         <View style={styles.form}>
           <View style={styles.inputContainer}>
             <FontAwesome name="envelope-o" size={18} color={theme.maroon} style={styles.inputIcon} />
             <TextInput
-              style={[styles.input, { color: theme.text, borderColor: theme.maroonSoft, backgroundColor: theme.background }]}
+              style={[styles.input, { color: theme.text, borderColor: theme.border, backgroundColor: theme.surfaceElevated }]}
               placeholder={t('auth.emailPlaceholder')}
-              placeholderTextColor="#999"
+              placeholderTextColor={theme.textMuted}
               value={email}
               onChangeText={setEmail}
               autoCapitalize="none"
@@ -66,7 +67,7 @@ export default function ForgotPasswordScreen() {
           </View>
           
           <TouchableOpacity 
-            style={[styles.button, { backgroundColor: theme.maroon }]} 
+            style={[styles.button, { backgroundColor: theme.maroon, shadowColor: theme.maroon }]} 
             onPress={handleReset}
             disabled={loading}
           >
@@ -78,7 +79,7 @@ export default function ForgotPasswordScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.link} onPress={() => router.back()}>
-            <Text style={[styles.linkText, { color: theme.maroon }]}>{t('auth.backToLogin')}</Text>
+            <Text style={[styles.linkText, { color: theme.textSecondary }]}>{t('auth.backToLogin')}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -92,44 +93,44 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    padding: 24,
+    padding: Spacing.xl,
     justifyContent: 'center',
   },
   backButton: {
     position: 'absolute',
     top: 60,
-    left: 24,
+    left: Spacing.xl,
     zIndex: 1,
   },
   header: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: Spacing.xxl,
     backgroundColor: 'transparent',
   },
   iconContainer: {
     width: 80,
     height: 80,
-    borderRadius: 40,
-    backgroundColor: '#800000',
+    borderRadius: BorderRadius.pill,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
-    shadowColor: '#800000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.2,
-    shadowRadius: 20,
-    elevation: 5,
+    marginBottom: Spacing.md,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 8,
   },
   title: {
+    fontFamily: Fonts.black,
     fontSize: 28,
-    fontWeight: '800',
-    marginTop: 10,
+    marginTop: Spacing.sm,
     textAlign: 'center',
+    letterSpacing: -0.5,
   },
   subtitle: {
+    fontFamily: Fonts.medium,
     fontSize: 16,
     textAlign: 'center',
-    marginTop: 8,
+    marginTop: 4,
     paddingHorizontal: 20,
   },
   form: {
@@ -138,45 +139,45 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     position: 'relative',
-    marginBottom: 20,
+    marginBottom: Spacing.md,
     backgroundColor: 'transparent',
   },
   inputIcon: {
     position: 'absolute',
-    left: 16,
+    left: 18,
     top: 18,
     zIndex: 1,
   },
   input: {
+    fontFamily: Fonts.medium,
     padding: 16,
-    paddingLeft: 48,
-    borderRadius: 16,
-    borderWidth: 1.5,
+    paddingLeft: 50,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
     fontSize: 16,
   },
   button: {
     padding: 18,
-    borderRadius: 16,
+    borderRadius: BorderRadius.pill,
     alignItems: 'center',
     marginTop: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
     elevation: 4,
   },
   buttonText: {
+    fontFamily: Fonts.bold,
     color: '#FFF',
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 16,
   },
   link: {
-    marginTop: 24,
+    marginTop: Spacing.lg,
     alignItems: 'center',
     backgroundColor: 'transparent',
   },
   linkText: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
+    fontSize: 15,
   },
 });
