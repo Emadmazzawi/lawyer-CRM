@@ -80,6 +80,52 @@ export interface Database {
           }
         ]
       }
+      cases: {
+        Row: {
+          id: string
+          user_id: string
+          client_id: string
+          title: string
+          description: string | null
+          status: 'Open' | 'Pending' | 'Closed' | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          client_id: string
+          title: string
+          description?: string | null
+          status?: 'Open' | 'Pending' | 'Closed' | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          client_id?: string
+          title?: string
+          description?: string | null
+          status?: 'Open' | 'Pending' | 'Closed' | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cases_client_id_fkey"
+            columns: ["client_id"]
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cases_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       notes: {
         Row: {
           id: string
@@ -181,6 +227,7 @@ export interface Database {
     }
     Enums: {
       client_status: 'Consultation' | 'Awaiting Docs' | 'In Court' | 'Closed'
+      case_status: 'Open' | 'Pending' | 'Closed'
       event_type: 'calendar_event' | 'countdown' | 'reminder'
     }
     CompositeTypes: {

@@ -1,9 +1,10 @@
 import { StyleSheet, FlatList, TextInput, TouchableOpacity, ActivityIndicator, Alert, ScrollView } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import React, { useEffect, useState, useCallback } from 'react';
-import { useLocalSearchParams, useNavigation } from 'expo-router';
+import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { getClientById, Client } from '@/src/api/clients';
 import { getNotesByClientId, createNote, Note } from '@/src/api/notes';
+import { getCasesByClientId, Case } from '@/src/api/cases';
 import { getCurrentUser } from '@/src/api/auth';
 import { FontAwesome } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -15,11 +16,13 @@ export default function ClientDetailScreen() {
   const { id } = useLocalSearchParams();
   const { t } = useTranslation();
   const navigation = useNavigation();
+  const router = useRouter();
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme];
   
   const [client, setClient] = useState<Client | null>(null);
   const [notes, setNotes] = useState<Note[]>([]);
+  const [cases, setCases] = useState<Case[]>([]);
   const [newNote, setNewNote] = useState('');
   const [loading, setLoading] = useState(true);
   const [noteLoading, setNoteLoading] = useState(false);
@@ -42,6 +45,9 @@ export default function ClientDetailScreen() {
     setLoading(true);
     const { data: clientData } = await getClientById(id as string);
     if (clientData) setClient(clientData);
+
+    const { data: casesData } = await getCasesByClientId(id as string);
+    if (casesData) setCases(casesData as Case[]);
 
     const { data: notesData } = await getNotesByClientId(id as string);
     if (notesData) setNotes(notesData as Note[]);
@@ -116,6 +122,43 @@ export default function ClientDetailScreen() {
             <Text style={styles.contactValue}>{client.contact_info?.phone || 'N/A'}</Text>
           </View>
         </View>
+      </Animated.View>
+
+      <Animated.View entering={FadeIn.delay(200)} style={styles.casesSection}>
+        <View style={styles.sectionHeaderContainer}>
+            <Text style={[styles.subHeader, { color: theme.text }]}>Cases / Matters</Text>
+            <TouchableOpacity 
+                style={[styles.addCaseBtn, { backgroundColor: theme.maroon + '20' }]} 
+                onPress={() => router.push({ pathname: '/create-case' as any, params: { clientId: id } })}
+            >
+                <FontAwesome name="plus" size={12} color={theme.maroon} />
+                <Text style={[styles.addCaseBtnText, { color: theme.maroon }]}>New</Text>
+            </TouchableOpacity>
+        </View>
+        
+        {cases.length === 0 ? (
+          <View style={styles.emptyNotes}>
+            <FontAwesome name="briefcase" size={40} color="#EEE" />
+            <Text style={styles.emptyNotesText}>No cases opened</Text>
+          </View>
+        ) : (
+          cases.map((item, index) => (
+            <Animated.View 
+              key={item.id}
+              entering={FadeInDown.delay(300 + index * 100)}
+              style={[styles.caseItem, { borderColor: theme.maroonSoft }]}
+            >
+              <View style={styles.caseHeader}>
+                  <Text style={styles.caseTitle}>{item.title}</Text>
+                  <View style={[styles.caseStatusBadge, { backgroundColor: item.status === 'Open' ? '#E8F5E9' : item.status === 'Closed' ? '#FFEBEE' : '#FFF3E0' }]}>
+                      <Text style={[styles.caseStatusText, { color: item.status === 'Open' ? '#2E7D32' : item.status === 'Closed' ? '#C62828' : '#EF6C00' }]}>{item.status}</Text>
+                  </View>
+              </View>
+              {item.description ? <Text style={styles.caseDescription} numberOfLines={2}>{item.description}</Text> : null}
+              <Text style={styles.date}>Opened: {new Date(item.created_at).toLocaleDateString()}</Text>
+            </Animated.View>
+          ))
+        )}
       </Animated.View>
 
       <Animated.View entering={FadeIn.delay(300)} style={styles.notesSection}>
@@ -242,6 +285,71 @@ const styles = StyleSheet.create({
   },
   notesSection: {
     backgroundColor: 'transparent',
+  },
+  sectionHeaderContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+    backgroundColor: 'transparent',
+  },
+  casesSection: {
+    backgroundColor: 'transparent',
+    marginBottom: 20,
+  },
+  addCaseBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    gap: 6,
+  },
+  addCaseBtnText: {
+    fontWeight: '700',
+    fontSize: 12,
+  },
+  caseItem: {
+    backgroundColor: '#FFF',
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  caseHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+    backgroundColor: 'transparent',
+  },
+  caseTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#333',
+    flex: 1,
+    marginRight: 10,
+  },
+  caseStatusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  caseStatusText: {
+    fontSize: 10,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+  },
+  caseDescription: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 20,
+    marginBottom: 8,
   },
   subHeader: {
     fontSize: 20,

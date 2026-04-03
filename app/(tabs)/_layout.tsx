@@ -1,57 +1,69 @@
 import React from 'react';
 import { FontAwesome } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
+import { Drawer } from 'expo-router/drawer';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { useTranslation } from 'react-i18next';
-import { CustomTabBar } from '@/components/CustomTabBar';
 
-function TabBarIcon(props: {
+function DrawerIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>['name'];
   color: string;
 }) {
-  return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
+  return <FontAwesome size={24} style={{ marginRight: -10 }} {...props} />;
 }
 
-export default function TabLayout() {
+export default function DrawerLayout() {
   const colorScheme = useColorScheme();
   const { t } = useTranslation();
+  const theme = Colors[colorScheme ?? 'light'];
 
   return (
-    <Tabs
-      tabBar={(props) => <CustomTabBar {...props} />}
+    <Drawer
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        drawerActiveTintColor: theme.tint,
         headerShown: true,
+        headerTintColor: theme.text,
       }}>
-      <Tabs.Screen
+      <Drawer.Screen
         name="index"
         options={{
+          drawerLabel: t('tabs.dashboard'),
           title: t('tabs.dashboard'),
-          tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
+          drawerIcon: ({ color }) => <DrawerIcon name="home" color={color} />,
         }}
       />
-      <Tabs.Screen
+      <Drawer.Screen
         name="clients"
         options={{
+          drawerLabel: t('tabs.clients'),
           title: t('tabs.clients'),
-          tabBarIcon: ({ color }) => <TabBarIcon name="users" color={color} />,
+          drawerIcon: ({ color }) => <DrawerIcon name="users" color={color} />,
         }}
       />
-      <Tabs.Screen
+      <Drawer.Screen
         name="reminders"
         options={{
+          drawerLabel: t('tabs.reminders'),
           title: t('tabs.reminders'),
-          tabBarIcon: ({ color }) => <TabBarIcon name="bell" color={color} />,
+          drawerIcon: ({ color }) => <DrawerIcon name="bell" color={color} />,
         }}
       />
-      <Tabs.Screen
+      <Drawer.Screen
         name="completed"
         options={{
+          drawerLabel: t('tabs.history'),
           title: t('tabs.history'),
-          tabBarIcon: ({ color }) => <TabBarIcon name="check-circle" color={color} />,
+          drawerIcon: ({ color }) => <DrawerIcon name="check-circle" color={color} />,
         }}
       />
-    </Tabs>
+      <Drawer.Screen
+        name="routines"
+        options={{
+          drawerLabel: t('tabs.routines', 'Routines'),
+          title: t('tabs.routines', 'Routines'),
+          drawerIcon: ({ color }) => <DrawerIcon name="tasks" color={color} />,
+        }}
+      />
+    </Drawer>
   );
 }
