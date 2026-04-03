@@ -1,11 +1,15 @@
 import React, { useState, useCallback } from 'react';
-import { StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, Alert, Text, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, Alert, Text, View, Animated } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
-import { fetchRoutines, deleteRoutine, Routine } from '@/src/api/routines';
+import { fetchRoutines, deleteRoutine, fetchTodayCompletions, toggleRoutineCompletion, Routine, RoutineCompletion } from '@/src/api/routines';
+import { Fonts, BorderRadius, Spacing } from '@/constants/Theme';
+import { format } from 'date-fns';
+
+const DAY_MAP: Record<number, string> = { 0: 'Sun', 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat' };
 
 export default function RoutinesScreen() {
   const { t } = useTranslation();
@@ -14,143 +18,346 @@ export default function RoutinesScreen() {
   const router = useRouter();
 
   const [routines, setRoutines] = useState<Routine[]>([]);
+  const [completions, setCompletions] = useState<RoutineCompletion[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<'scheduled' | 'flexible'>('scheduled');
 
-  const loadRoutines = async () => {
+  const todayKey = DAY_MAP[new Date().getDay()];
+  const todayLabel = format(new Date(), 'EEEE');
+
+  const loadData = async () => {
     setLoading(true);
-    const { data, error } = await fetchRoutines();
-    if (error) {
-      console.error('Error fetching routines:', error);
-      Alert.alert(t('common.error', 'Error'), t('routines.fetchError', 'Failed to load routines.'));
-    } else {
-      setRoutines(data || []);
-    }
+    const [routineRes, completionRes] = await Promise.all([
+      fetchRoutines(),
+      fetchTodayCompletions(),
+    ]);
+    if (routineRes.data) setRoutines(routineRes.data);
+    if (completionRes.data) setCompletions(completionRes.data);
     setLoading(false);
   };
 
   useFocusEffect(
     useCallback(() => {
-      loadRoutines();
+      loadData();
     }, [])
   );
 
   const handleDelete = (id: string) => {
     Alert.alert(
-      t('routines.deleteTitle', 'Delete Routine'),
-      t('routines.deleteConfirm', 'Are you sure you want to delete this routine?'),
+      'Delete Routine',
+      'Are you sure you want to delete this routine?',
       [
-        { text: t('common.cancel', 'Cancel'), style: 'cancel' },
-        { 
-          text: t('common.delete', 'Delete'), 
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
           style: 'destructive',
           onPress: async () => {
             const { error } = await deleteRoutine(id);
-            if (error) {
-              Alert.alert(t('common.error', 'Error'), t('routines.deleteError', 'Failed to delete routine.'));
-            } else {
-              loadRoutines();
-            }
+            if (!error) loadData();
           }
         }
       ]
     );
   };
 
-  const renderRoutine = ({ item }: { item: Routine }) => (
-    <View style={[styles.card, { backgroundColor: theme.background, borderBottomColor: '#EBEBEB' }]}>
-      <View style={styles.cardHeader}>
-        <View style={styles.titleContainer}>
-          <Text style={[styles.title, { color: theme.text }]}>{item.title}</Text>
-          {item.description ? (
-            <Text style={[styles.description, { color: '#888' }]} numberOfLines={1}>
-              {item.description}
-            </Text>
-          ) : null}
+  const handleToggleCheck = async (routineId: string) => {
+    const { completed, error } = await toggleRoutineCompletion(routineId);
+    if (!error) {
+      if (completed) {
+        setCompletions(prev => [...prev, { id: 'temp', routine_id: routineId, user_id: '', date_string: '', completed_at: '' }]);
+      } else {
+        setCompletions(prev => prev.filter(c => c.routine_id !== routineId));
+      }
+    }
+  };
+
+  const isCompletedToday = (routineId: string) => {
+    return completions.some(c => c.routine_id === routineId);
+  };
+
+  // Filter routines by tab and today's day
+  const filteredRoutines = routines.filter(r => {
+    const matchType = r.schedule_type === tab || (!r.schedule_type && tab === 'scheduled');
+    const matchDay = tab === 'flexible' || !r.active_days || (Array.isArray(r.active_days) && r.active_days.includes(todayKey));
+    return matchType && matchDay;
+  });
+
+  // The first uncompleted routine is the "next" one
+  const nextRoutine = filteredRoutines.find(r => !isCompletedToday(r.id));
+
+  const renderNextRoutineCard = () => {
+    if (!nextRoutine) return null;
+    const startTime = nextRoutine.reminder_time || format(new Date(), 'h:mm a');
+    
+    return (
+      <View style={styles.blueCard}>
+        <View style={styles.blueCardHeader}>
+          <Text style={styles.blueCardTime}>
+            {startTime}
+          </Text>
         </View>
-        <TouchableOpacity style={styles.deleteButton} onPress={() => handleDelete(item.id)}>
-          <FontAwesome name="trash" size={16} color="#d9534f" />
+        <Text style={styles.blueCardTitle}>{nextRoutine.title}</Text>
+        <TouchableOpacity
+          style={styles.quickStartBtn}
+          onPress={() => router.push(`/run-routine/${nextRoutine.id}`)}
+        >
+          <Text style={styles.quickStartText}>QUICK-START</Text>
         </TouchableOpacity>
       </View>
-      
-      <TouchableOpacity 
-        style={[styles.runButton, { backgroundColor: '#1A1A1A' }]}
-        onPress={() => router.push(`/run-routine/${item.id}`)}
+    );
+  };
+
+  const renderRoutineCheckItem = ({ item }: { item: Routine }) => {
+    const completed = isCompletedToday(item.id);
+    return (
+      <TouchableOpacity
+        style={[styles.checkItem, { backgroundColor: theme.surface, borderColor: theme.border }]}
+        onPress={() => handleToggleCheck(item.id)}
+        activeOpacity={0.6}
       >
-        <Text style={styles.runButtonText}>{t('routines.run', 'Run Routine')}</Text>
+        {/* Check circle */}
+        <View style={[
+          styles.checkCircle,
+          { borderColor: completed ? theme.success : theme.border },
+          completed && { backgroundColor: theme.success },
+        ]}>
+          {completed && <FontAwesome name="check" size={14} color="#FFF" />}
+        </View>
+
+        {/* Content */}
+        <View style={{ flex: 1, backgroundColor: 'transparent' }}>
+          <Text style={[
+            styles.checkTitle,
+            { color: theme.text },
+            completed && { textDecorationLine: 'line-through', color: theme.textMuted },
+          ]}>
+            {item.title}
+          </Text>
+          {item.reminder_time && (
+            <Text style={[styles.checkSub, { color: theme.textMuted }]}>
+              {item.reminder_time}
+            </Text>
+          )}
+        </View>
+
+        {/* Actions */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'transparent' }}>
+          <TouchableOpacity onPress={() => router.push(`/run-routine/${item.id}`)}>
+            <FontAwesome name="play-circle" size={28} color="#4A7BF7" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => handleDelete(item.id)}>
+            <FontAwesome name="trash-o" size={18} color={theme.textMuted} />
+          </TouchableOpacity>
+        </View>
       </TouchableOpacity>
-    </View>
-  );
+    );
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      {loading ? (
-        <ActivityIndicator size="large" color={theme.maroon} style={{ marginTop: 50 }} />
-      ) : routines.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Text style={[styles.emptyText, { color: theme.text }]}>
-            {t('routines.empty', 'No routines found. Create one to get started!')}
+      {/* Title */}
+      <View style={styles.header}>
+        <Text style={[styles.headerTitle, { color: theme.text }]}>Routines</Text>
+        <TouchableOpacity onPress={() => router.push('/create-routine')}>
+          <FontAwesome name="plus-circle" size={28} color="#4A7BF7" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Scheduled / Flexible Toggle */}
+      <View style={[styles.tabRow, { backgroundColor: theme.surfaceElevated }]}>
+        <TouchableOpacity
+          style={[styles.tabBtn, tab === 'scheduled' && styles.tabBtnActive]}
+          onPress={() => setTab('scheduled')}
+        >
+          <Text style={[styles.tabText, { color: theme.textSecondary }, tab === 'scheduled' && styles.tabTextActive]}>
+            Scheduled 🔁
           </Text>
-        </View>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tabBtn, tab === 'flexible' && styles.tabBtnActive]}
+          onPress={() => setTab('flexible')}
+        >
+          <Text style={[styles.tabText, { color: theme.textSecondary }, tab === 'flexible' && styles.tabTextActive]}>
+            Flexible ✂️
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {loading ? (
+        <ActivityIndicator size="large" color="#4A7BF7" style={{ marginTop: 50 }} />
       ) : (
         <FlatList
-          data={routines}
+          data={filteredRoutines}
           keyExtractor={(item) => item.id}
-          renderItem={renderRoutine}
-          contentContainerStyle={styles.listContent}
+          renderItem={renderRoutineCheckItem}
           showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.listContent}
+          ListHeaderComponent={
+            <>
+              {/* Day label */}
+              <View style={styles.dayRow}>
+                <Text style={[styles.dayLabel, { color: theme.textSecondary }]}>{todayLabel}</Text>
+                <FontAwesome name="calendar" size={16} color={theme.textMuted} />
+              </View>
+
+              {/* Blue Card */}
+              {tab === 'scheduled' && renderNextRoutineCard()}
+            </>
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <FontAwesome name="moon-o" size={48} color={theme.textMuted} />
+              <Text style={[styles.emptyText, { color: theme.textMuted }]}>
+                No {tab} routines for today.{'\n'}Tap + to create one!
+              </Text>
+            </View>
+          }
         />
       )}
-
-      <TouchableOpacity
-        style={[styles.fab, { backgroundColor: '#111' }]}
-        onPress={() => router.push('/create-routine')}
-      >
-        <FontAwesome name="plus" size={20} color="#FFF" />
-      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
-  listContent: { padding: 16, paddingBottom: 100 },
-  card: {
-    paddingVertical: 20,
-    borderBottomWidth: 1,
-    marginBottom: 0,
-  },
-  cardHeader: {
+  container: { flex: 1 },
+  header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 16,
+    alignItems: 'center',
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.md,
+    marginBottom: Spacing.md,
   },
-  titleContainer: { flex: 1, paddingRight: 10 },
-  title: { fontSize: 18, fontWeight: '700', letterSpacing: -0.5, marginBottom: 4 },
-  description: { fontSize: 14, lineHeight: 20 },
-  deleteButton: { padding: 8, backgroundColor: '#F9F9F9', borderRadius: 20 },
-  runButton: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 20,
+  headerTitle: {
+    fontFamily: Fonts.black,
+    fontSize: 28,
+    letterSpacing: -0.5,
+  },
+  tabRow: {
+    flexDirection: 'row',
+    marginHorizontal: Spacing.lg,
+    borderRadius: BorderRadius.lg,
+    padding: 4,
+    marginBottom: Spacing.md,
+  },
+  tabBtn: {
+    flex: 1,
     paddingVertical: 10,
-    borderRadius: 24,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
   },
-  runButtonText: { color: '#FFF', fontSize: 13, fontWeight: '600', letterSpacing: 0.3 },
-  emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
-  emptyText: { fontSize: 16, textAlign: 'center', color: '#666' },
-  fab: {
-    position: 'absolute',
-    bottom: 30,
-    right: 30,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+  tabBtnActive: {
+    backgroundColor: '#FFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  tabText: {
+    fontFamily: Fonts.semiBold,
+    fontSize: 14,
+  },
+  tabTextActive: {
+    color: '#111',
+  },
+  listContent: {
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: 100,
+  },
+  dayRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: Spacing.md,
+  },
+  dayLabel: {
+    fontFamily: Fonts.semiBold,
+    fontSize: 14,
+  },
+
+  // ── Blue Card ──────────────────
+  blueCard: {
+    backgroundColor: '#4A7BF7',
+    borderRadius: BorderRadius.xl,
+    padding: Spacing.lg,
+    marginBottom: Spacing.lg,
+    shadowColor: '#4A7BF7',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 6,
+  },
+  blueCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  blueCardTime: {
+    fontFamily: Fonts.semiBold,
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.7)',
+  },
+  blueCardTitle: {
+    fontFamily: Fonts.black,
+    fontSize: 22,
+    color: '#FFF',
+    marginBottom: Spacing.md,
+  },
+  quickStartBtn: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingVertical: 12,
+    borderRadius: BorderRadius.pill,
+    alignItems: 'center',
+  },
+  quickStartText: {
+    fontFamily: Fonts.black,
+    color: '#FFF',
+    fontSize: 14,
+    letterSpacing: 1,
+  },
+
+  // ── Check Items ──────────────────
+  checkItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    marginBottom: Spacing.sm,
+  },
+  checkCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 2,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 4,
+    marginRight: Spacing.md,
+  },
+  checkTitle: {
+    fontFamily: Fonts.semiBold,
+    fontSize: 15,
+  },
+  checkSub: {
+    fontFamily: Fonts.regular,
+    fontSize: 12,
+    marginTop: 2,
+  },
+
+  // ── Empty ──────────────────
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+  },
+  emptyText: {
+    fontFamily: Fonts.medium,
+    fontSize: 15,
+    textAlign: 'center',
+    marginTop: Spacing.md,
+    lineHeight: 22,
   },
 });
