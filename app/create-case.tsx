@@ -102,12 +102,12 @@ export default function CreateCaseScreen() {
                 {clientsLoading ? (
                     <ActivityIndicator style={{ alignSelf: 'flex-start' }} />
                 ) : (
-                    <View style={[styles.pickerContainer, { borderColor: theme.maroonSoft }]}>
+                    <View style={[styles.pickerContainer, { borderColor: theme.border, backgroundColor: theme.surfaceElevated }]}>
                         <Picker
                             selectedValue={selectedClientId}
                             onValueChange={(itemValue: string) => setSelectedClientId(itemValue)}
                             style={{ color: theme.text }}
-                            dropdownIconColor={theme.maroon}
+                            dropdownIconColor={theme.textMuted}
                         >
                             {clients.map(client => (
                                 <Picker.Item key={client.id} label={client.name} value={client.id} />
@@ -119,11 +119,11 @@ export default function CreateCaseScreen() {
 
             {/* Title */}
             <View style={styles.inputGroup}>
-                <Text style={styles.label}>CASE TITLE</Text>
+                <Text style={[styles.label, { color: theme.textSecondary }]}>CASE TITLE</Text>
                 <TextInput
-                    style={[styles.input, { borderColor: theme.maroonSoft, color: theme.text }]}
+                    style={[styles.input, { borderColor: theme.border, backgroundColor: theme.surfaceElevated, color: theme.text }]}
                     placeholder="e.g. Smith v. Jones"
-                    placeholderTextColor="#999"
+                    placeholderTextColor={theme.textMuted}
                     value={title}
                     onChangeText={setTitle}
                 />
@@ -131,11 +131,11 @@ export default function CreateCaseScreen() {
 
             {/* Description */}
             <View style={styles.inputGroup}>
-                <Text style={styles.label}>DESCRIPTION</Text>
+                <Text style={[styles.label, { color: theme.textSecondary }]}>DESCRIPTION</Text>
                 <TextInput
-                    style={[styles.input, styles.textArea, { borderColor: theme.maroonSoft, color: theme.text }]}
+                    style={[styles.input, styles.textArea, { borderColor: theme.border, backgroundColor: theme.surfaceElevated, color: theme.text }]}
                     placeholder="Brief details about the matter..."
-                    placeholderTextColor="#999"
+                    placeholderTextColor={theme.textMuted}
                     value={description}
                     onChangeText={setDescription}
                     multiline
@@ -146,19 +146,21 @@ export default function CreateCaseScreen() {
 
             {/* Status */}
             <View style={styles.inputGroup}>
-                <Text style={styles.label}>STATUS</Text>
+                <Text style={[styles.label, { color: theme.textSecondary }]}>STATUS</Text>
                 <View style={styles.statusContainer}>
                     {(['Open', 'Pending', 'Closed'] as CaseStatus[]).map((s) => (
                         <TouchableOpacity
                             key={s}
                             style={[
                                 styles.statusChip,
+                                { backgroundColor: theme.surfaceElevated, borderColor: theme.border },
                                 status === s && { backgroundColor: theme.maroon, borderColor: theme.maroon }
                             ]}
                             onPress={() => setStatus(s)}
                         >
                             <Text style={[
                                 styles.statusChipText,
+                                { color: theme.textSecondary },
                                 status === s && { color: '#FFF' }
                             ]}>{s}</Text>
                         </TouchableOpacity>
@@ -223,8 +225,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   input: {
-    backgroundColor: '#FFF',
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderRadius: 16,
     padding: 16,
     fontSize: 16,
@@ -235,8 +236,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   pickerContainer: {
-    backgroundColor: '#FFF',
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderRadius: 16,
     overflow: 'hidden',
   },
@@ -249,9 +249,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: '#E0E0E0',
-    backgroundColor: '#FFF',
+    borderWidth: 1,
     alignItems: 'center',
   },
   statusChipText: {

@@ -216,6 +216,9 @@ export default function DashboardScreen() {
             <Text style={[styles.greeting, { color: theme.textSecondary }]}>{greeting},</Text>
             <Text style={[styles.userName, { color: theme.text }]}>{profile?.full_name || 'Legal Professional'}</Text>
           </View>
+          <TouchableOpacity onPress={() => router.push('/settings')} style={{ padding: 8 }}>
+            <FontAwesome name="cog" size={24} color={theme.textMuted} />
+          </TouchableOpacity>
         </View>
       </Animated.View>
 

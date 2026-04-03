@@ -9,10 +9,12 @@ import { Fonts, Spacing, BorderRadius } from '@/constants/Theme';
 import { useTranslation } from 'react-i18next';
 import { getCurrentUser } from '@/src/api/auth';
 import { getProfile, Profile } from '@/src/api/profiles';
+import { useRouter } from 'expo-router';
 
 function CustomDrawerContent(props: any) {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? 'light'];
+  const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
@@ -62,8 +64,15 @@ function CustomDrawerContent(props: any) {
         
       </DrawerContentScrollView>
 
-      {/* Footer */}
+      {/* Footer with Settings gear */}
       <View style={[styles.footer, { borderTopColor: theme.border }]}>
+        <TouchableOpacity
+          style={[styles.settingsBtn, { backgroundColor: theme.surfaceElevated }]}
+          onPress={() => router.push('/settings')}
+        >
+          <FontAwesome name="cog" size={18} color={theme.textSecondary} />
+          <Text style={[styles.settingsBtnText, { color: theme.textSecondary }]}>Settings</Text>
+        </TouchableOpacity>
         <Text style={[styles.versionText, { color: theme.textMuted }]}>Maroon CRM v1.0.0</Text>
       </View>
     </View>
@@ -198,9 +207,23 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   footer: {
-    padding: Spacing.xl,
+    padding: Spacing.lg,
     borderTopWidth: 1,
     alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  settingsBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.md,
+    gap: 10,
+    width: '100%',
+  },
+  settingsBtnText: {
+    fontFamily: Fonts.semiBold,
+    fontSize: 14,
   },
   versionText: {
     fontFamily: Fonts.medium,

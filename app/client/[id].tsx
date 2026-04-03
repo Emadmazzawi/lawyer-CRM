@@ -100,7 +100,7 @@ export default function ClientDetailScreen() {
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: theme.background }]} contentContainerStyle={styles.content}>
-      <Animated.View entering={FadeInDown.duration(600)} style={[styles.headerCard, { backgroundColor: '#FFF', borderColor: theme.maroonSoft }]}>
+      <Animated.View entering={FadeInDown.duration(600)} style={[styles.headerCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
         <View style={styles.statusBadgeContainer}>
             <View style={[styles.statusBadge, { backgroundColor: theme.maroon + '15' }]}>
                 <Text style={[styles.statusText, { color: theme.maroon }]}>
@@ -146,7 +146,7 @@ export default function ClientDetailScreen() {
             <Animated.View 
               key={item.id}
               entering={FadeInDown.delay(300 + index * 100)}
-              style={[styles.caseItem, { borderColor: theme.maroonSoft }]}
+              style={[styles.caseItem, { backgroundColor: theme.surfaceElevated, borderColor: theme.border }]}
             >
               <View style={styles.caseHeader}>
                   <Text style={styles.caseTitle}>{item.title}</Text>
@@ -164,7 +164,7 @@ export default function ClientDetailScreen() {
       <Animated.View entering={FadeIn.delay(300)} style={styles.notesSection}>
         <Text style={[styles.subHeader, { color: theme.text }]}>{t('clientDetails.notes')}</Text>
         
-        <View style={[styles.addNoteContainer, { borderColor: theme.maroonSoft }]}>
+        <View style={[styles.addNoteContainer, { backgroundColor: theme.surfaceElevated, borderColor: theme.border }]}>
           <TextInput 
             style={[styles.input, { color: theme.text }]}
             value={newNote}
@@ -196,9 +196,9 @@ export default function ClientDetailScreen() {
             <Animated.View 
               key={item.id}
               entering={FadeInDown.delay(400 + index * 100)}
-              style={[styles.noteItem, { borderLeftColor: theme.maroon }]}
+              style={[styles.noteItem, { backgroundColor: theme.surfaceElevated, borderLeftColor: theme.maroon, borderColor: theme.border }]}
             >
-              <Text style={styles.noteContent}>{item.content}</Text>
+              <Text style={[styles.noteContent, { color: theme.text }]}>{item.content}</Text>
               <Text style={styles.date}>{new Date(item.created_at).toLocaleDateString()}</Text>
             </Animated.View>
           ))
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
   headerCard: {
     padding: 24,
     borderRadius: 24,
-    borderWidth: 1.5,
+    borderWidth: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.05,
@@ -310,7 +310,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   caseItem: {
-    backgroundColor: '#FFF',
     padding: 16,
     borderRadius: 16,
     marginBottom: 12,
@@ -357,13 +356,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   addNoteContainer: {
-    backgroundColor: '#FFF',
     borderRadius: 16,
-    borderWidth: 1.5,
     padding: 8,
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 24,
+    borderWidth: 1,
   },
   input: {
     flex: 1,
@@ -385,10 +383,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   noteItem: {
-    backgroundColor: '#FFF',
     padding: 16,
     borderRadius: 16,
     marginBottom: 12,
+    borderWidth: 1,
     borderLeftWidth: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
