@@ -148,7 +148,7 @@ export default function CreateRoutineScreen() {
               <DateTimePicker
                 value={reminderTime || new Date()}
                 mode="time"
-                display="spinner"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                 onChange={onTimeChange}
                 textColor={theme.text}
               />

@@ -1,7 +1,7 @@
 import { StyleSheet, FlatList, TouchableOpacity, View as RNView, Dimensions } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import React, { useEffect, useState, useCallback } from 'react';
-import { getEventsTasks, EventTask } from '@/src/api/events_and_tasks';
+import { getEventsTasks, EventTask, deleteEventTask, updateEventTask } from '@/src/api/events_and_tasks';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { EmptyState } from '@/components/EmptyState';
@@ -12,6 +12,47 @@ import { Skeleton } from '@/components/Skeleton';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { TextInput } from 'react-native';
+import Animated, { FadeInDown, Layout } from 'react-native-reanimated';
+
+const ReminderItem = React.memo(({ item, index, theme, t, onComplete, onDelete }: { item: Partial<EventTask>; index: number; theme: any; t: any; onComplete: (id: string) => void; onDelete: (id: string) => void }) => {
+  const getPriorityColor = (priority?: string) => {
+    switch (priority) {
+      case 'Urgent': return theme.danger;
+      case 'High': return theme.warning;
+      case 'Medium': return theme.success;
+      default: return theme.border;
+    }
+  };
+
+  return (
+    <Animated.View 
+      entering={FadeInDown.delay(index * 50).duration(500)}
+      layout={Layout.springify()}
+      style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border, borderLeftWidth: 4, borderLeftColor: getPriorityColor(item.priority || undefined) }]}
+    >
+      <View style={[styles.iconContainer, { backgroundColor: '#F3E5F5' }]}>
+        <FontAwesome 
+          name="bell-o" 
+          size={20} 
+          color="#7B1FA2" 
+        />
+      </View>
+      <View style={styles.cardContent}>
+        <Text style={[styles.title, { color: theme.text }]} numberOfLines={1}>{item.title}</Text>
+        <Text style={[styles.subtitle, { color: theme.textMuted }]}>{item.due_date ? format(new Date(item.due_date), 'MMM d, yyyy') : 'No date'}</Text>
+      </View>
+      
+      <View style={styles.actionGroup}>
+        <TouchableOpacity onPress={() => onComplete(item.id!)} style={styles.actionButton}>
+          <FontAwesome name="check-circle-o" size={24} color={theme.success} />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => onDelete(item.id!)} style={[styles.actionButton, { marginLeft: Spacing.md }]}>
+          <FontAwesome name="trash-o" size={22} color={theme.danger} />
+        </TouchableOpacity>
+      </View>
+    </Animated.View>
+  );
+});
 
 export default function RemindersScreen() {
   const { t } = useTranslation();
@@ -37,42 +78,36 @@ export default function RemindersScreen() {
     setLoading(false);
   };
 
-  const getPriorityColor = (priority?: string) => {
-    switch (priority) {
-      case 'Urgent': return theme.danger;
-      case 'High': return theme.warning;
-      case 'Medium': return theme.success;
-      default: return theme.border;
-    }
+  const handleComplete = async (id: string) => {
+    const { error } = await updateEventTask(id, { is_completed: true });
+    if (!error) loadReminders();
   };
 
-  const renderItem = useCallback(({ item }: { item: Partial<EventTask> }) => (
-    <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border, borderLeftWidth: 4, borderLeftColor: getPriorityColor(item.priority || undefined) }]}>
-      <View style={styles.cardHeader}>
-        <Text style={[styles.title, { color: theme.text }]}>{item.title}</Text>
-        <FontAwesome name="bell-o" size={16} color={theme.maroon} />
-      </View>
-      <View style={styles.cardFooter}>
-        <View style={styles.dateGroup}>
-          <FontAwesome name="calendar-o" size={12} color={theme.textSecondary} />
-          <Text style={[styles.dateText, { color: theme.textMuted }]}>
-            {item.due_date ? format(new Date(item.due_date), 'MMM d, yyyy') : 'No date'}
-          </Text>
-        </View>
-        <View style={[styles.priorityBadge, { backgroundColor: theme.surfaceElevated, borderWidth: 1, borderColor: theme.border }]}>
-          <Text style={[styles.priorityText, { color: getPriorityColor(item.priority || undefined) }]}>{item.priority ? t(`priorities.${item.priority.toLowerCase()}`) : t('priorities.medium')}</Text>
-        </View>
-      </View>
-    </View>
+  const handleDelete = async (id: string) => {
+    const { error } = await deleteEventTask(id);
+    if (!error) loadReminders();
+  };
+
+  const renderItem = useCallback(({ item, index }: { item: Partial<EventTask>, index: number }) => (
+    <ReminderItem
+      item={item}
+      index={index}
+      theme={theme}
+      t={t}
+      onComplete={handleComplete}
+      onDelete={handleDelete}
+    />
   ), [theme, t]);
 
   const LoadingSkeleton = () => (
     <View style={{ padding: 20 }}>
-      {[1, 2, 3].map(i => (
+      {[1, 2, 3].map((i) => (
         <View key={i} style={styles.card}>
-          <Skeleton width="40%" height={16} style={{ marginBottom: 12 }} />
-          <Skeleton width="80%" height={24} style={{ marginBottom: 12 }} />
-          <Skeleton width="30%" height={14} />
+          <Skeleton width={44} height={44} borderRadius={12} />
+          <View style={[styles.cardContent, { marginLeft: 15 }]}>
+            <Skeleton width="60%" height={16} style={{ marginBottom: 8 }} />
+            <Skeleton width="40%" height={12} />
+          </View>
         </View>
       ))}
     </View>
@@ -191,49 +226,40 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   card: {
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: Spacing.md,
     borderRadius: BorderRadius.lg,
     marginBottom: Spacing.md,
     borderWidth: 1,
   },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  iconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: BorderRadius.md,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: Spacing.sm,
+  },
+  cardContent: {
+    flex: 1,
+    marginStart: Spacing.md,
     backgroundColor: 'transparent',
   },
   title: {
-    flex: 1,
     fontFamily: Fonts.bold,
     fontSize: 16,
-    marginEnd: 10,
   },
-  cardFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: 'transparent',
-  },
-  dateGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'transparent',
-  },
-  dateText: {
+  subtitle: {
     fontFamily: Fonts.medium,
     fontSize: 13,
-    marginStart: 6,
+    marginTop: 2,
   },
-  priorityBadge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: BorderRadius.pill,
+  actionGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
   },
-  priorityText: {
-    fontFamily: Fonts.bold,
-    fontSize: 11,
-    textTransform: 'uppercase',
+  actionButton: {
+    padding: 4,
   },
 });
