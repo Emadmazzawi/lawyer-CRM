@@ -84,13 +84,14 @@ function DrawerIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>['name'];
   color: string;
 }) {
-  return <FontAwesome size={20} style={{ marginStart: 4, marginEnd: -8, width: 24, textAlign: 'center' }} {...props} />;
+  return <FontAwesome size={20} style={{ width: 28, textAlign: 'center' }} {...props} />;
 }
 
 export default function DrawerLayout() {
   const colorScheme = useColorScheme();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const theme = Colors[colorScheme ?? 'light'];
+  const isEnglish = i18n.language === 'en';
 
   return (
     <Drawer
@@ -107,12 +108,13 @@ export default function DrawerLayout() {
         drawerItemStyle: {
           borderRadius: BorderRadius.md,
           marginHorizontal: Spacing.md,
-          paddingVertical: 2,
+          paddingVertical: 4,
+          paddingHorizontal: 8,
         },
         drawerLabelStyle: {
           fontFamily: Fonts.semiBold,
           fontSize: 15,
-          marginStart: -8,
+          marginStart: isEnglish ? 18 : 12,
         },
         drawerStyle: {
           backgroundColor: theme.background,
