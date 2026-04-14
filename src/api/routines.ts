@@ -4,19 +4,30 @@ import { Database } from '../types/supabase';
 
 export type Routine = Database['public']['Tables']['routines']['Row'] & {
   active_days: string[];
+  steps?: RoutineStep[];
 };
 
 export type RoutineStep = Database['public']['Tables']['routine_steps']['Row'];
 
 export type RoutineCompletion = Database['public']['Tables']['routine_completions']['Row'];
 
+export type StepCompletion = Database['public']['Tables']['step_completions']['Row'];
+
 export const fetchRoutines = async (): Promise<{ data: Routine[] | null, error: any }> => {
   const { data, error } = await supabase
     .from('routines')
-    .select('*')
+    .select('*, steps:routine_steps(*)')
     .order('created_at', { ascending: false });
 
-  return { data: data as Routine[] | null, error };
+  if (error) return { data: null, error };
+
+  // Sort steps within each routine by order_index
+  const routinesWithSortedSteps = (data as any[]).map(routine => ({
+    ...routine,
+    steps: routine.steps ? [...routine.steps].sort((a, b) => a.order_index - b.order_index) : []
+  }));
+
+  return { data: routinesWithSortedSteps as Routine[], error: null };
 };
 
 export const fetchRoutineById = async (id: string): Promise<{ data: { routine: Routine, steps: RoutineStep[] } | null, error: any }> => {
@@ -108,6 +119,13 @@ export const deleteRoutine = async (id: string) => {
     .eq('id', id);
 };
 
+export const deleteStep = async (stepId: string) => {
+  return await supabase
+    .from('routine_steps')
+    .delete()
+    .eq('id', stepId);
+};
+
 // ─── Daily Completion Tracking ────────────────────────
 export const fetchCompletionsForRange = async (startDate: string, endDate: string): Promise<{ data: RoutineCompletion[] | null, error: any }> => {
   const { data, error } = await supabase
@@ -118,16 +136,16 @@ export const fetchCompletionsForRange = async (startDate: string, endDate: strin
   return { data: data as RoutineCompletion[] | null, error };
 };
 
-export const fetchTodayCompletions = async (): Promise<{ data: RoutineCompletion[] | null, error: any }> => {
-  const today = format(new Date(), 'yyyy-MM-dd');
+export const fetchStepCompletionsForRange = async (startDate: string, endDate: string): Promise<{ data: StepCompletion[] | null, error: any }> => {
   const { data, error } = await supabase
-    .from('routine_completions')
+    .from('step_completions')
     .select('*')
-    .eq('date_string', today);
-  return { data: data as RoutineCompletion[] | null, error };
+    .gte('date_string', startDate)
+    .lte('date_string', endDate);
+  return { data: data as StepCompletion[] | null, error };
 };
 
-export const toggleRoutineCompletion = async (routineId: string, dateString?: string): Promise<{ completed: boolean, error: any }> => {
+export const toggleRoutineCompletion = async (routineId: string, dateString?: string, forceStatus?: boolean): Promise<{ completed: boolean, error: any }> => {
   const today = format(new Date(), 'yyyy-MM-dd');
   const targetDate = dateString || today;
   
@@ -142,18 +160,73 @@ export const toggleRoutineCompletion = async (routineId: string, dateString?: st
     .eq('date_string', targetDate)
     .maybeSingle();
 
-  if (existing) {
-    // Un-complete
+  if (existing && forceStatus !== true) {
+    // Un-complete (either toggled or forced false)
     const { error } = await supabase
       .from('routine_completions')
       .delete()
       .eq('id', existing.id);
     return { completed: false, error };
-  } else {
-    // Complete
+  } else if (!existing && forceStatus !== false) {
+    // Complete (either toggled or forced true)
     const { error } = await supabase
       .from('routine_completions')
       .insert([{ routine_id: routineId, user_id: userData.user.id, date_string: targetDate }]);
     return { completed: true, error };
+  }
+  
+  return { completed: !!existing, error: null };
+};
+
+export const toggleStepCompletion = async (stepId: string, dateString: string, forceStatus?: boolean): Promise<{ completed: boolean, error: any }> => {
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData?.user) return { completed: false, error: new Error('Not authenticated') };
+
+  const { data: existing } = await supabase
+    .from('step_completions')
+    .select('id')
+    .eq('step_id', stepId)
+    .eq('date_string', dateString)
+    .maybeSingle();
+
+  if (existing && forceStatus !== true) {
+    const { error } = await supabase
+      .from('step_completions')
+      .delete()
+      .eq('id', existing.id);
+    return { completed: false, error };
+  } else if (!existing && forceStatus !== false) {
+    const { error } = await supabase
+      .from('step_completions')
+      .insert([{ step_id: stepId, user_id: userData.user.id, date_string: dateString }]);
+    return { completed: true, error };
+  }
+
+  return { completed: !!existing, error: null };
+};
+
+export const batchSetStepCompletion = async (stepIds: string[], dateString: string, completed: boolean): Promise<{ error: any }> => {
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData?.user) return { error: new Error('Not authenticated') };
+
+  if (completed) {
+    // Upsert completions
+    const inserts = stepIds.map(sid => ({
+      step_id: sid,
+      user_id: userData.user.id,
+      date_string: dateString
+    }));
+    const { error } = await supabase
+      .from('step_completions')
+      .upsert(inserts, { onConflict: 'step_id,date_string' });
+    return { error };
+  } else {
+    // Delete completions
+    const { error } = await supabase
+      .from('step_completions')
+      .delete()
+      .in('step_id', stepIds)
+      .eq('date_string', dateString);
+    return { error };
   }
 };

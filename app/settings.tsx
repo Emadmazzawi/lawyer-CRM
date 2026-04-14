@@ -13,6 +13,7 @@ import Colors from '@/constants/Colors';
 import * as Updates from 'expo-updates';
 import { Appearance } from 'react-native';
 import { Fonts, BorderRadius, Spacing } from '@/constants/Theme';
+import { useAppTheme } from './_layout';
 
 const LANGUAGES = [
   { label: 'English', value: 'en', flag: '🇬🇧' },
@@ -24,7 +25,7 @@ export default function SettingsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const navigation = useNavigation();
-  const colorScheme = useColorScheme();
+  const { colorScheme, setTheme } = useAppTheme();
   const theme = Colors[colorScheme];
   const [currentLang, setCurrentLang] = useState(i18n.language);
   const [currentTheme, setCurrentTheme] = useState('system');
@@ -85,13 +86,8 @@ export default function SettingsScreen() {
 
   const changeTheme = async (themeValue: string) => {
     try {
-      await AsyncStorage.setItem('app_theme', themeValue);
       setCurrentTheme(themeValue);
-      if (themeValue === 'system') {
-        Appearance.setColorScheme(null as any);
-      } else {
-        Appearance.setColorScheme(themeValue as 'light' | 'dark');
-      }
+      setTheme(themeValue as any);
     } catch (e) {
       console.error('Failed to change theme', e);
     }

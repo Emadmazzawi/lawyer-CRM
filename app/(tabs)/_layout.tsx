@@ -122,6 +122,15 @@ export default function DrawerLayout() {
         }
       }}>
       <Drawer.Screen
+        name="routines"
+        options={{
+          drawerLabel: t('tabs.routines'),
+          title: t('tabs.routines'),
+          drawerIcon: ({ color, focused }) => <DrawerIcon name="tasks" color={focused ? '#FFF' : color} />,
+          drawerActiveTintColor: '#FFF',
+        }}
+      />
+      <Drawer.Screen
         name="index"
         options={{
           drawerLabel: t('tabs.dashboard'),
@@ -145,15 +154,6 @@ export default function DrawerLayout() {
           drawerLabel: t('tabs.reminders'),
           title: t('tabs.reminders'),
           drawerIcon: ({ color, focused }) => <DrawerIcon name="bell" color={focused ? '#FFF' : color} />,
-          drawerActiveTintColor: '#FFF',
-        }}
-      />
-      <Drawer.Screen
-        name="routines"
-        options={{
-          drawerLabel: t('tabs.routines'),
-          title: t('tabs.routines'),
-          drawerIcon: ({ color, focused }) => <DrawerIcon name="tasks" color={focused ? '#FFF' : color} />,
           drawerActiveTintColor: '#FFF',
         }}
       />

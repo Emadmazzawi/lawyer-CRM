@@ -10,13 +10,13 @@ import {
 } from '@expo-google-fonts/inter';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, createContext, useContext } from 'react';
 import 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { supabase } from '@/src/lib/supabase';
 import { Session } from '@supabase/supabase-js';
 
-import { useColorScheme } from '@/components/useColorScheme';
+import { useColorScheme as useSystemColorScheme } from '@/components/useColorScheme';
 import { useNotifications } from '@/src/hooks/useNotifications';
 import '@/src/i18n';
 import { I18nManager, Appearance } from 'react-native';
@@ -36,6 +36,13 @@ export const unstable_settings = {
 
 SplashScreen.preventAutoHideAsync();
 
+const ThemeContext = createContext<{
+  colorScheme: 'light' | 'dark';
+  setTheme: (theme: 'light' | 'dark' | 'system') => void;
+}>({ colorScheme: 'light', setTheme: () => {} });
+
+export const useAppTheme = () => useContext(ThemeContext);
+
 export default function RootLayout() {
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
@@ -46,38 +53,51 @@ export default function RootLayout() {
     Inter_900Black,
   });
 
+  const systemColorScheme = useSystemColorScheme();
+  const [appTheme, setAppTheme] = useState<'light' | 'dark' | 'system'>('system');
+  const [initialized, setInitialized] = useState(false);
+
   useEffect(() => {
     if (error) throw error;
   }, [error]);
 
   useEffect(() => {
     AsyncStorage.getItem('app_theme').then((theme) => {
-      if (theme && theme !== 'system') {
-        Appearance.setColorScheme(theme as 'light' | 'dark');
+      if (theme) {
+        setAppTheme(theme as any);
       }
+      setInitialized(true);
     });
   }, []);
 
   useEffect(() => {
-    if (loaded) {
+    if (loaded && initialized) {
       SplashScreen.hideAsync();
     }
-  }, [loaded]);
+  }, [loaded, initialized]);
 
-  if (!loaded) {
+  const setTheme = async (theme: 'light' | 'dark' | 'system') => {
+    setAppTheme(theme);
+    await AsyncStorage.setItem('app_theme', theme);
+  };
+
+  if (!loaded || !initialized) {
     return null;
   }
 
+  const activeColorScheme = appTheme === 'system' ? systemColorScheme : (appTheme as 'light' | 'dark');
+
   return (
-    <LocalizationProvider>
-      <RootLayoutNav />
-    </LocalizationProvider>
+    <ThemeContext.Provider value={{ colorScheme: activeColorScheme, setTheme }}>
+      <LocalizationProvider>
+        <RootLayoutNav colorScheme={activeColorScheme} />
+      </LocalizationProvider>
+    </ThemeContext.Provider>
   );
 }
 
-function RootLayoutNav() {
+function RootLayoutNav({ colorScheme }: { colorScheme: 'light' | 'dark' }) {
   const { t } = useTranslation();
-  const colorScheme = useColorScheme();
   const [session, setSession] = useState<Session | null>(null);
   const [initialized, setInitialized] = useState(false);
   const segments = useSegments();
@@ -107,10 +127,8 @@ function RootLayoutNav() {
     const inAuthGroup = segments[0] === '(auth)';
 
     if (!session && !inAuthGroup) {
-      // Redirect to login if not authenticated
       router.replace('/(auth)/login');
     } else if (session && inAuthGroup) {
-      // Redirect to tabs if authenticated
       router.replace('/(tabs)');
     }
   }, [session, initialized, segments]);

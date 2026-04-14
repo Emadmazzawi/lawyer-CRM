@@ -244,6 +244,29 @@ export interface Database {
           completed_at?: string
         }
       }
+      step_completions: {
+        Row: {
+          id: string
+          step_id: string
+          user_id: string
+          date_string: string
+          completed_at: string
+        }
+        Insert: {
+          id?: string
+          step_id: string
+          user_id: string
+          date_string: string
+          completed_at?: string
+        }
+        Update: {
+          id?: string
+          step_id?: string
+          user_id?: string
+          date_string?: string
+          completed_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
