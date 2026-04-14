@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, TouchableOpacity, Modal, FlatList, ScrollView, TextInput, View, Text, KeyboardAvoidingView, Platform } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { Fonts, BorderRadius, Spacing } from '@/constants/Theme';
+import { useTranslation } from 'react-i18next';
 
 type StepTemplate = {
   emoji: string;
@@ -9,36 +10,6 @@ type StepTemplate = {
   duration_minutes: number;
   category: string;
 };
-
-const CATEGORIES = [
-  { label: '☀️ Morning Routine', value: 'morning' },
-  { label: '🌙 Evening Routine', value: 'evening' },
-  { label: '📚 Study', value: 'study' },
-  { label: '💪 Fitness', value: 'fitness' },
-  { label: '🧘 Wellness', value: 'wellness' },
-];
-
-const PRESET_STEPS: StepTemplate[] = [
-  { emoji: '✍️', title: 'Write down goals', duration_minutes: 10, category: 'morning' },
-  { emoji: '🚿', title: 'Take a shower', duration_minutes: 15, category: 'morning' },
-  { emoji: '🪥', title: 'Brush my teeth', duration_minutes: 3, category: 'morning' },
-  { emoji: '🛏️', title: 'Make my bed', duration_minutes: 2, category: 'morning' },
-  { emoji: '💊', title: 'Take vitamins', duration_minutes: 1, category: 'morning' },
-  { emoji: '☀️', title: 'Get some sunlight', duration_minutes: 10, category: 'morning' },
-  { emoji: '🤸', title: 'Stretch', duration_minutes: 10, category: 'morning' },
-  { emoji: '🧼', title: 'Quick face wash', duration_minutes: 1, category: 'morning' },
-  { emoji: '🥞', title: 'Make breakfast', duration_minutes: 15, category: 'morning' },
-  { emoji: '🧘', title: 'Meditation Session', duration_minutes: 10, category: 'wellness' },
-  { emoji: '💧', title: 'Drink water', duration_minutes: 1, category: 'morning' },
-  { emoji: '📖', title: 'Read a book', duration_minutes: 20, category: 'evening' },
-  { emoji: '📝', title: 'Journal', duration_minutes: 10, category: 'evening' },
-  { emoji: '🎵', title: 'Listen to calm music', duration_minutes: 15, category: 'evening' },
-  { emoji: '🦷', title: 'Night skincare', duration_minutes: 5, category: 'evening' },
-  { emoji: '📚', title: 'Study session', duration_minutes: 30, category: 'study' },
-  { emoji: '📝', title: 'Review notes', duration_minutes: 15, category: 'study' },
-  { emoji: '🏋️', title: 'Workout', duration_minutes: 30, category: 'fitness' },
-  { emoji: '🏃', title: 'Go for a run', duration_minutes: 20, category: 'fitness' },
-];
 
 type Props = {
   visible: boolean;
@@ -48,11 +19,42 @@ type Props = {
 };
 
 export default function AddRoutineStepModal({ visible, onClose, onSelectStep, theme }: Props) {
+  const { t } = useTranslation();
   const [selectedCategory, setSelectedCategory] = useState('morning');
   const [showCustom, setShowCustom] = useState(false);
   const [customTitle, setCustomTitle] = useState('');
   const [customEmoji, setCustomEmoji] = useState('⭐');
   const [customDuration, setCustomDuration] = useState('5');
+
+  const CATEGORIES = [
+    { label: t('routines.categories.morning'), value: 'morning' },
+    { label: t('routines.categories.evening'), value: 'evening' },
+    { label: t('routines.categories.study'), value: 'study' },
+    { label: t('routines.categories.fitness'), value: 'fitness' },
+    { label: t('routines.categories.wellness'), value: 'wellness' },
+  ];
+
+  const PRESET_STEPS: StepTemplate[] = [
+    { emoji: '✍️', title: t('routines.presets.goals'), duration_minutes: 10, category: 'morning' },
+    { emoji: '🚿', title: t('routines.presets.shower'), duration_minutes: 15, category: 'morning' },
+    { emoji: '🪥', title: t('routines.presets.brush'), duration_minutes: 3, category: 'morning' },
+    { emoji: '🛏️', title: t('routines.presets.bed'), duration_minutes: 2, category: 'morning' },
+    { emoji: '💊', title: t('routines.presets.vitamins'), duration_minutes: 1, category: 'morning' },
+    { emoji: '☀️', title: t('routines.presets.sunlight'), duration_minutes: 10, category: 'morning' },
+    { emoji: '🤸', title: t('routines.presets.stretch'), duration_minutes: 10, category: 'morning' },
+    { emoji: '🧼', title: t('routines.presets.facewash'), duration_minutes: 1, category: 'morning' },
+    { emoji: '🥞', title: t('routines.presets.breakfast'), duration_minutes: 15, category: 'morning' },
+    { emoji: '🧘', title: t('routines.presets.meditation'), duration_minutes: 10, category: 'wellness' },
+    { emoji: '💧', title: t('routines.presets.water'), duration_minutes: 1, category: 'morning' },
+    { emoji: '📖', title: t('routines.presets.read'), duration_minutes: 20, category: 'evening' },
+    { emoji: '📝', title: t('routines.presets.journal'), duration_minutes: 10, category: 'evening' },
+    { emoji: '🎵', title: t('routines.presets.music'), duration_minutes: 15, category: 'evening' },
+    { emoji: '🦷', title: t('routines.presets.skincare'), duration_minutes: 5, category: 'evening' },
+    { emoji: '📚', title: t('routines.presets.study'), duration_minutes: 30, category: 'study' },
+    { emoji: '📝', title: t('routines.presets.review'), duration_minutes: 15, category: 'study' },
+    { emoji: '🏋️', title: t('routines.presets.workout'), duration_minutes: 30, category: 'fitness' },
+    { emoji: '🏃', title: t('routines.presets.run'), duration_minutes: 20, category: 'fitness' },
+  ];
 
   const filteredSteps = PRESET_STEPS.filter(s => s.category === selectedCategory);
 
@@ -84,7 +86,7 @@ export default function AddRoutineStepModal({ visible, onClose, onSelectStep, th
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={[styles.modalContainer, { backgroundColor: theme.background }]}>
           {/* Header */}
           <View style={styles.modalHeader}>
-            <Text style={[styles.modalTitle, { color: theme.text }]}>Create new step</Text>
+            <Text style={[styles.modalTitle, { color: theme.text }]}>{t('routines.createStep')}</Text>
             <TouchableOpacity onPress={onClose}>
               <FontAwesome name="times" size={22} color={theme.textMuted} />
             </TouchableOpacity>
@@ -92,10 +94,10 @@ export default function AddRoutineStepModal({ visible, onClose, onSelectStep, th
 
           {/* Custom Step Button */}
           <TouchableOpacity 
-            style={[styles.customStepButton, { backgroundColor: '#4A7BF7' }]}
+            style={[styles.customStepButton, { backgroundColor: theme.maroon }]}
             onPress={() => setShowCustom(!showCustom)}
           >
-            <Text style={styles.customStepButtonText}>CUSTOM STEP</Text>
+            <Text style={styles.customStepButtonText}>{t('routines.customStep')}</Text>
           </TouchableOpacity>
 
           {showCustom && (
@@ -109,7 +111,7 @@ export default function AddRoutineStepModal({ visible, onClose, onSelectStep, th
                 />
                 <TextInput
                   style={[styles.customInput, { flex: 1, color: theme.text, backgroundColor: theme.surfaceElevated, borderColor: theme.border }]}
-                  placeholder="Step name..."
+                  placeholder={t('routines.stepNamePlaceholder')}
                   placeholderTextColor={theme.textMuted}
                   value={customTitle}
                   onChangeText={setCustomTitle}
@@ -122,15 +124,15 @@ export default function AddRoutineStepModal({ visible, onClose, onSelectStep, th
                   onChangeText={setCustomDuration}
                   keyboardType="number-pad"
                 />
-                <Text style={{ color: theme.textSecondary, fontFamily: Fonts.medium }}>min</Text>
-                <TouchableOpacity style={[styles.addCustomBtn, { backgroundColor: '#4A7BF7' }]} onPress={handleCustomStep}>
-                  <Text style={{ color: '#FFF', fontFamily: Fonts.bold }}>Add</Text>
+                <Text style={{ color: theme.textSecondary, fontFamily: Fonts.medium }}>{t('common.min')}</Text>
+                <TouchableOpacity style={[styles.addCustomBtn, { backgroundColor: theme.maroon }]} onPress={handleCustomStep}>
+                  <Text style={{ color: '#FFF', fontFamily: Fonts.bold }}>{t('common.add')}</Text>
                 </TouchableOpacity>
               </View>
             </View>
           )}
 
-          <Text style={[styles.orText, { color: theme.textMuted }]}>or</Text>
+          <Text style={[styles.orText, { color: theme.textMuted }]}>{t('common.or')}</Text>
 
           {/* Category Pills */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll} contentContainerStyle={{ gap: 8, paddingHorizontal: 4 }}>
@@ -140,7 +142,7 @@ export default function AddRoutineStepModal({ visible, onClose, onSelectStep, th
                 style={[
                   styles.categoryPill,
                   { backgroundColor: theme.surface, borderColor: theme.border },
-                  selectedCategory === cat.value && { backgroundColor: '#4A7BF7', borderColor: '#4A7BF7' },
+                  selectedCategory === cat.value && { backgroundColor: theme.maroon, borderColor: theme.maroon },
                 ]}
                 onPress={() => setSelectedCategory(cat.value)}
               >
@@ -164,14 +166,14 @@ export default function AddRoutineStepModal({ visible, onClose, onSelectStep, th
               <TouchableOpacity style={[styles.stepRow, { borderBottomColor: theme.border }]} onPress={() => handlePickStep(item)}>
                 <Text style={styles.stepEmoji}>{item.emoji}</Text>
                 <Text style={[styles.stepTitle, { color: theme.text }]}>{item.title}</Text>
-                <Text style={[styles.stepDuration, { color: theme.textMuted }]}>{item.duration_minutes} min</Text>
+                <Text style={[styles.stepDuration, { color: theme.textMuted }]}>{item.duration_minutes} {t('common.min')}</Text>
               </TouchableOpacity>
             )}
           />
 
           {/* Bottom Pick Button */}
           <TouchableOpacity style={[styles.pickButton, { backgroundColor: theme.textMuted }]} onPress={onClose}>
-            <Text style={styles.pickButtonText}>PICK STEP</Text>
+            <Text style={styles.pickButtonText}>{t('routines.pickStep')}</Text>
           </TouchableOpacity>
         </KeyboardAvoidingView>
       </View>

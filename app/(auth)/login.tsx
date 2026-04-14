@@ -27,9 +27,9 @@ export default function LoginScreen() {
     if (error) {
       setLoading(false);
       if (error.message.includes('Invalid login credentials')) {
-        Alert.alert('Login Failed', t('auth.userNotFound'));
+        Alert.alert(t('auth.loginFailed'), t('auth.userNotFound'));
       } else {
-        Alert.alert('Login Failed', error.message);
+        Alert.alert(t('auth.loginFailed'), error.message);
       }
     } else {
       router.replace('/(tabs)');
@@ -37,22 +37,18 @@ export default function LoginScreen() {
   };
 
   const handleGuestLogin = async () => {
-    console.log('Guest button pressed');
     setGuestLoading(true);
     try {
-      const { error, data } = await signInAnonymously();
-      console.log('SignInAnonymously result:', { error, data });
+      const { error } = await signInAnonymously();
       if (error) {
         setGuestLoading(false);
-        Alert.alert('Guest Login Failed', error.message);
+        Alert.alert(t('auth.guestLoginFailed'), error.message);
       } else {
-        console.log('Guest login successful, redirecting...');
         router.replace('/(tabs)');
       }
     } catch (err: any) {
-      console.error('HandleGuestLogin fatal error:', err);
       setGuestLoading(false);
-      Alert.alert('Error', err.message || 'An unexpected error occurred');
+      Alert.alert(t('common.error'), err.message || 'An unexpected error occurred');
     }
   };
 
@@ -63,10 +59,7 @@ export default function LoginScreen() {
     >
       <TouchableOpacity 
         style={styles.settingsButton} 
-        onPress={() => {
-          console.log('Navigating to settings...');
-          router.push('/settings');
-        }}
+        onPress={() => router.push('/settings')}
       >
         <FontAwesome name="cog" size={28} color={theme.maroon} />
       </TouchableOpacity>
@@ -76,8 +69,8 @@ export default function LoginScreen() {
           <View style={[styles.logoContainer, { backgroundColor: theme.maroon, shadowColor: theme.maroon }]}>
             <FontAwesome name="balance-scale" size={44} color="#FFF" />
           </View>
-          <Text style={[styles.title, { color: theme.text }]}>Maroon CRM</Text>
-          <Text style={[styles.subtitle, { color: theme.textSecondary }]}>Modern Legal Organizer</Text>
+          <Text style={[styles.title, { color: theme.text }]}>{t('auth.appName')}</Text>
+          <Text style={[styles.subtitle, { color: theme.textSecondary }]}>{t('auth.appSubtitle')}</Text>
         </View>
 
         <View style={styles.form}>

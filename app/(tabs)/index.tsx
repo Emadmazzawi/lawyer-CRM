@@ -40,7 +40,7 @@ const EventItem = React.memo(({ item, index, formatDate, onDelete, onComplete, t
       <TouchableOpacity onPress={() => onComplete(item.id!)} style={styles.actionButton}>
         <FontAwesome name="check-circle-o" size={24} color={theme.success} />
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => onDelete(item.id!)} style={[styles.actionButton, { marginLeft: Spacing.md }]}>
+      <TouchableOpacity onPress={() => onDelete(item.id!)} style={[styles.actionButton, { marginStart: Spacing.md }]}>
         <FontAwesome name="trash-o" size={22} color={theme.danger} />
       </TouchableOpacity>
     </View>
@@ -159,13 +159,13 @@ export default function DashboardScreen() {
   };
 
   const formatDate = useCallback((dateStr: string | null) => {
-    if (!dateStr) return 'No date set';
+    if (!dateStr) return t('dashboard.no_date');
     try {
       return format(new Date(dateStr), 'MMM d, h:mm a');
     } catch (e) {
       return dateStr;
     }
-  }, []);
+  }, [t]);
 
   const renderEventItem = useCallback(({ item, index }: { item: Partial<EventTask>; index: number }) => (
     <EventItem 
@@ -199,7 +199,7 @@ export default function DashboardScreen() {
       {[1, 2, 3, 4].map((i) => (
         <View key={i} style={styles.card}>
           <Skeleton width={44} height={44} borderRadius={12} />
-          <View style={[styles.cardContent, { marginLeft: 15 }]}>
+          <View style={[styles.cardContent, { marginStart: 15 }]}>
             <Skeleton width="60%" height={16} style={{ marginBottom: 8 }} />
             <Skeleton width="40%" height={12} />
           </View>
@@ -214,7 +214,7 @@ export default function DashboardScreen() {
         <View style={styles.headerTop}>
           <View>
             <Text style={[styles.greeting, { color: theme.textSecondary }]}>{greeting},</Text>
-            <Text style={[styles.userName, { color: theme.text }]}>{profile?.full_name || 'Legal Professional'}</Text>
+            <Text style={[styles.userName, { color: theme.text }]}>{profile?.full_name || t('dashboard.default_user_role')}</Text>
           </View>
           <TouchableOpacity onPress={() => router.push('/settings')} style={{ padding: 8 }}>
             <FontAwesome name="cog" size={24} color={theme.textMuted} />
@@ -233,8 +233,8 @@ export default function DashboardScreen() {
         </View>
         
         {loading ? (
-          <View style={{ flexDirection: 'row', paddingLeft: 20 }}>
-            <Skeleton width={width * 0.7} height={120} borderRadius={24} style={{ marginRight: 15 }} />
+          <View style={{ flexDirection: 'row', paddingStart: 20 }}>
+            <Skeleton width={width * 0.7} height={120} borderRadius={24} style={{ marginEnd: 15 }} />
             <Skeleton width={width * 0.7} height={120} borderRadius={24} />
           </View>
         ) : countdowns.length === 0 ? (
@@ -242,7 +242,7 @@ export default function DashboardScreen() {
             <EmptyState 
               icon="hourglass-start" 
               title={t('dashboard.noDeadlines')} 
-              message="Keep track of your case deadlines and court dates with countdown cards."
+              message={t('dashboard.noDeadlinesMsg')}
               onPress={() => router.push('/create-event?type=countdown')}
               actionLabel={t('dashboard.addDeadline')}
             />
@@ -274,7 +274,7 @@ export default function DashboardScreen() {
             <EmptyState 
               icon="calendar-check-o" 
               title={t('dashboard.noEvents')} 
-              message="Schedule consultations, hearings, and meetings to see them listed here."
+              message={t('dashboard.noEventsMsg')}
               onPress={() => router.push('/create-event?type=calendar_event')}
               actionLabel={t('dashboard.addEvent')}
             />

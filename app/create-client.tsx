@@ -33,34 +33,30 @@ export default function CreateClientScreen() {
 
   const handleCreate = async () => {
     if (!name) {
-      Alert.alert('Error', 'Please enter a client name');
+      Alert.alert(t('common.error'), t('forms.clientNameRequired'));
       return;
     }
 
     setLoading(true);
     const { data: userData } = await getCurrentUser();
     if (!userData?.user) {
-      Alert.alert('Error', 'User not authenticated');
+      Alert.alert(t('common.error'), t('forms.userNotAuth'));
       setLoading(false);
       return;
     }
 
-    console.log('Attempting to create client:', { name, status, email, phone });
-    const { data: clientData, error } = await createClient({
+    const { error } = await createClient({
       user_id: userData.user.id,
       name,
       status,
       contact_info: { email, phone },
     });
 
-    console.log('Create client response:', { clientData, error });
-
     setLoading(false);
     if (error) {
-      console.error('Client creation error:', error);
-      Alert.alert('Creation Failed', error.message);
+      Alert.alert(t('forms.creationFailed'), error.message);
     } else {
-      Alert.alert('Success', 'Client created successfully');
+      Alert.alert(t('common.success'), t('forms.clientCreated'));
       router.back();
     }
   };

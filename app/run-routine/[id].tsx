@@ -5,7 +5,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
-import { fetchRoutineById, Routine, RoutineStep } from '@/src/api/routines';
+import { fetchRoutineById, Routine, RoutineStep, toggleRoutineCompletion } from '@/src/api/routines';
 import { Fonts, BorderRadius, Spacing } from '@/constants/Theme';
 import { format } from 'date-fns';
 
@@ -62,13 +62,16 @@ export default function RunRoutineScreen() {
     };
   }, [isRunning, timeLeft]);
 
-  const handleNextStep = () => {
+  const handleNextStep = async () => {
     if (currentStepIndex < steps.length - 1) {
       const nextIndex = currentStepIndex + 1;
       setCurrentStepIndex(nextIndex);
       setTimeLeft(steps[nextIndex].duration_in_seconds);
       setIsRunning(true);
     } else {
+      if (id && typeof id === 'string') {
+        await toggleRoutineCompletion(id);
+      }
       Alert.alert('Congrats! 🎉', 'You have finished this routine.', [
         { text: 'OK', onPress: () => router.back() }
       ]);
@@ -106,7 +109,7 @@ export default function RunRoutineScreen() {
   if (loading || !routine) {
     return (
       <View style={[styles.centered, { backgroundColor: theme.background }]}>
-        <ActivityIndicator size="large" color="#4A7BF7" />
+        <ActivityIndicator size="large" color={theme.maroon} />
       </View>
     );
   }
@@ -126,7 +129,7 @@ export default function RunRoutineScreen() {
   // ── PREVIEW MODE ──
   if (mode === 'preview') {
     return (
-      <View style={[styles.container, { backgroundColor: '#FFFFFF' }]}>
+      <View style={[styles.container, { backgroundColor: theme.surface }]}>
         {/* Close */}
         <View style={styles.previewHeader}>
           <TouchableOpacity onPress={() => router.back()}>
@@ -138,12 +141,12 @@ export default function RunRoutineScreen() {
 
         {/* Big Emoji Ring */}
         <View style={styles.emojiRingContainer}>
-          <View style={[styles.emojiRing, { borderColor: '#E5E7EB' }]}>
-            <View style={[styles.emojiInner, { backgroundColor: '#F9FAFB' }]}>
+          <View style={[styles.emojiRing, { borderColor: theme.border }]}>
+            <View style={[styles.emojiInner, { backgroundColor: theme.surfaceElevated }]}>
               <Text style={styles.bigEmoji}>{firstEmoji}</Text>
             </View>
           </View>
-          <View style={[styles.startNowBadge, { backgroundColor: '#111827' }]}>
+          <View style={[styles.startNowBadge, { backgroundColor: theme.maroon }]}>
             <Text style={styles.startNowText}>Start now</Text>
           </View>
         </View>
@@ -158,7 +161,7 @@ export default function RunRoutineScreen() {
           keyExtractor={(s) => s.id}
           style={styles.previewStepsList}
           renderItem={({ item }) => (
-            <View style={[styles.previewStepRow, { borderBottomColor: '#E5E7EB' }]}>
+            <View style={[styles.previewStepRow, { borderBottomColor: theme.border }]}>
               <Text style={styles.previewStepEmoji}>{item.emoji || '📝'}</Text>
               <View style={{ flex: 1, backgroundColor: 'transparent' }}>
                 <Text style={[styles.previewStepTitle, { color: theme.text }]}>{item.title}</Text>
@@ -169,17 +172,17 @@ export default function RunRoutineScreen() {
         />
 
         {/* Bottom Bar */}
-        <View style={[styles.bottomBar, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB' }]}>
+        <View style={[styles.bottomBar, { backgroundColor: theme.surface, borderColor: theme.border }]}>
           <View style={{ flexDirection: 'row', gap: 10, marginBottom: Spacing.md }}>
-            <View style={[styles.bottomPill, { backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' }]}>
+            <View style={[styles.bottomPill, { backgroundColor: theme.surfaceElevated, borderColor: theme.border }]}>
               <Text style={styles.bottomPillEmoji}>{firstEmoji}</Text>
               <Text style={[styles.bottomPillText, { color: theme.text }]}>{routine.title}</Text>
             </View>
-            <View style={[styles.bottomPill, { backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' }]}>
+            <View style={[styles.bottomPill, { backgroundColor: theme.surfaceElevated, borderColor: theme.border }]}>
               <Text style={[styles.bottomPillText, { color: theme.textSecondary }]}>Finish at {finishTime}</Text>
             </View>
           </View>
-          <TouchableOpacity style={[styles.startButton, { backgroundColor: '#111827' }]} onPress={startRoutine}>
+          <TouchableOpacity style={[styles.startButton, { backgroundColor: theme.maroon }]} onPress={startRoutine}>
             <Text style={styles.startButtonText}>START ROUTINE</Text>
           </TouchableOpacity>
         </View>
@@ -192,7 +195,7 @@ export default function RunRoutineScreen() {
   const progressText = `Step ${currentStepIndex + 1} / ${steps.length}`;
 
   return (
-    <View style={[styles.container, { backgroundColor: '#FFFFFF', justifyContent: 'space-between', padding: Spacing.lg }]}>
+    <View style={[styles.container, { backgroundColor: theme.surface, justifyContent: 'space-between', padding: Spacing.lg }]}>
       <View style={{ alignItems: 'center', marginTop: 40 }}>
         <Text style={[styles.routineRunTitle, { color: theme.textSecondary }]}>{routine.title}</Text>
         <Text style={[styles.progressText, { color: theme.textMuted }]}>{progressText}</Text>
@@ -209,8 +212,8 @@ export default function RunRoutineScreen() {
       </View>
 
       <View style={{ alignItems: 'center' }}>
-        <View style={[styles.timerRing, { borderColor: timeLeft === 0 ? theme.success : '#E5E7EB', backgroundColor: '#FFFFFF' }]}>
-          <Text style={[styles.timerText, { color: timeLeft === 0 ? theme.success : '#111827' }]}>{formatTime(timeLeft)}</Text>
+        <View style={[styles.timerRing, { borderColor: timeLeft === 0 ? theme.success : theme.border, backgroundColor: theme.surface }]}>
+          <Text style={[styles.timerText, { color: timeLeft === 0 ? theme.success : theme.text }]}>{formatTime(timeLeft)}</Text>
         </View>
       </View>
 
@@ -223,7 +226,7 @@ export default function RunRoutineScreen() {
           <FontAwesome name="backward" size={24} color={theme.text} />
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.playPauseBtn, { backgroundColor: '#111827' }]} onPress={toggleTimer}>
+        <TouchableOpacity style={[styles.playPauseBtn, { backgroundColor: theme.maroon }]} onPress={toggleTimer}>
           <FontAwesome
             name={timeLeft === 0 ? 'step-forward' : isRunning ? 'pause' : 'play'}
             size={28}

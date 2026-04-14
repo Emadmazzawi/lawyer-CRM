@@ -1,31 +1,152 @@
 {
+  "common": {
+    "ok": "تم",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "delete": "حذف",
+    "error": "خطأ",
+    "success": "نجاح",
+    "loading": "جاري التحميل...",
+    "user": "مستخدم",
+    "add": "إضافة",
+    "or": "أو",
+    "min": "د"
+  },
   "tabs": {
-    "dashboard": "لوحة القيادة",
+    "dashboard": "الرئيسية",
     "clients": "العملاء",
-    "reminders": "التذكيرات"
+    "reminders": "التذكيرات",
+    "routines": "الروتين",
+    "completed": "الأرشيف",
+    "history": "السجل"
   },
   "dashboard": {
-    "greeting": "صباح الخير،",
-    "overview": "نظرة عامة على لوحة القيادة",
-    "active_countdowns": "العد التنازلي النشط",
-    "upcoming_events": "الأحداث القادمة",
-    "see_all": "عرض الكل",
-    "no_date": "لم يتم تحديد موعد"
+    "greetingMorning": "صباح الخير",
+    "greetingAfternoon": "طاب مساؤك",
+    "greetingEvening": "مساء الخير",
+    "default_user_role": "محامي قانوني",
+    "activeCountdowns": "العد التنازلي النشط",
+    "seeFullList": "عرض القائمة كاملة",
+    "noDeadlines": "لا توجد مواعيد نهائية",
+    "noDeadlinesMsg": "تتبع المواعيد النهائية لقضاياك وتواريخ المحكمة باستخدام بطاقات العد التنازلي.",
+    "addDeadline": "إضافة موعد نهائي",
+    "upcomingEvents": "الأحداث القادمة",
+    "pastArchive": "الأرشيف السابق",
+    "noEvents": "لا توجد أحداث قادمة",
+    "noEventsMsg": "قم بجدولة الاستشارات والجلسات والاجتماعات لرؤيتها هنا.",
+    "addEvent": "إضافة حدث",
+    "overdue": "متأخر",
+    "daysLeft": "متبقي {{days}} أيام",
+    "no_date": "لم يتم تحديد تاريخ"
   },
   "clients": {
     "title": "العملاء",
-    "loading": "جاري التحميل...",
+    "search_placeholder": "البحث عن عملاء...",
+    "noClients": "لم يتم العثور على عملاء",
+    "noClientsMessage": "ابدأ بإضافة عميلك الأول لإدارة قضاياه ومستنداته.",
+    "addClient": "إضافة عميل",
     "status": "الحالة: ",
     "contact": "الاتصال: ",
     "notes": "ملاحظات",
     "add_note_placeholder": "إضافة ملاحظة...",
     "add_button": "إضافة"
   },
-  "reminders": {
-    "priority": "الأولوية: ",
-    "due": "تاريخ الاستحقاق: "
+  "statuses": {
+    "consultation": "استشارة",
+    "awaitingDocs": "في انتظار المستندات",
+    "inCourt": "في المحكمة",
+    "closed": "مغلق"
   },
-  "common": {
-    "modal": "نافذة"
+  "routines": {
+    "title": "الروتين",
+    "scheduled": "مجدول",
+    "flexible": "مرن",
+    "quickStart": "بدء سريع",
+    "deleteRoutine": "حذف الروتين",
+    "deleteConfirm": "هل أنت متأكد أنك تريد حذف هذا الروتين؟",
+    "noRoutines": "لا يوجد روتين {{tab}} لهذا اليوم.\nاضغط على + لإنشاء واحد!",
+    "missed": "فائت",
+    "done": "تم",
+    "createStep": "إنشاء خطوة جديدة",
+    "customStep": "خطوة مخصصة",
+    "stepNamePlaceholder": "اسم الخطوة...",
+    "pickStep": "اختر الخطوة",
+    "categories": {
+      "morning": "☀️ روتين الصباح",
+      "evening": "🌙 روتين المساء",
+      "study": "📚 دراسة",
+      "fitness": "💪 لياقة",
+      "wellness": "🧘 عافية"
+    },
+    "presets": {
+      "goals": "كتابة الأهداف",
+      "shower": "الاستحمام",
+      "brush": "تنظيف الأسنان",
+      "bed": "ترتيب السرير",
+      "vitamins": "تناول الفيتامينات",
+      "sunlight": "التعرض لأشعة الشمس",
+      "stretch": "تمارين التمدد",
+      "facewash": "غسل الوجه سريعاً",
+      "breakfast": "تحضير الإفطار",
+      "meditation": "جلسة تأمل",
+      "water": "شرب الماء",
+      "read": "قراءة كتاب",
+      "journal": "كتابة المذكرات",
+      "music": "الاستماع لموسيقى هادئة",
+      "skincare": "العناية بالبشرة ليلاً",
+      "study": "جلسة دراسة",
+      "review": "مراجعة الملاحظات",
+      "workout": "تمرين رياضي",
+      "run": "الجري"
+    }
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "language": "اللغة",
+    "appearance": "المظهر",
+    "logout": "تسجيل الخروج",
+    "logout_error": "خطأ في تسجيل الخروج",
+    "restart_required": "إعادة التشغيل مطلوبة",
+    "restart_msg": "يحتاج التطبيق إلى إعادة التشغيل لتطبيق اتجاه التخطيط الجديد.",
+    "themes": {
+      "system": "افتراضي النظام",
+      "light": "الوضع الفاتح",
+      "dark": "الوضع المظلم"
+    },
+    "languages": {
+      "en": "English",
+      "ar": "العربية",
+      "he": "Hebrew"
+    }
+  },
+  "auth": {
+    "welcome": "مرحباً بعودتك",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "forgotPassword": "هل نسيت كلمة المرور؟",
+    "login": "تسجيل الدخول",
+    "noAccount": "ليس لديك حساب؟ سجل الآن",
+    "or": "أو",
+    "loginGuest": "المتابعة كضيف",
+    "userNotFound": "بيانات الاعتماد غير صالحة.",
+    "loginFailed": "فشل تسجيل الدخول",
+    "guestLoginFailed": "فشل تسجيل دخول الضيف",
+    "appName": "مارون CRM",
+    "appSubtitle": "منظم قانوني حديث"
+  },
+  "forms": {
+    "clientName": "اسم العميل",
+    "caseStatus": "حالة القضية",
+    "contactInfo": "معلومات الاتصال",
+    "phone": "رقم الهاتف",
+    "email": "البريد الإلكتروني",
+    "clientNameRequired": "يرجى إدخال اسم العميل",
+    "clientCreated": "تم إنشاء العميل بنجاح",
+    "creationFailed": "فشل الإنشاء",
+    "userNotAuth": "المستخدم غير مصرح له",
+    "save": "حفظ"
+  },
+  "placeholders": {
+    "clientName": "مثال: أحمد محمد"
   }
 }

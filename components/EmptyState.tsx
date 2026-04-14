@@ -4,6 +4,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { useColorScheme } from './useColorScheme';
 import Colors from '@/constants/Colors';
 import { Fonts, BorderRadius, Spacing } from '@/constants/Theme';
+import { useTranslation } from 'react-i18next';
 
 interface EmptyStateProps {
   icon: React.ComponentProps<typeof FontAwesome>['name'];
@@ -14,6 +15,7 @@ interface EmptyStateProps {
 }
 
 export const EmptyState = ({ icon, title, message, onPress, actionLabel }: EmptyStateProps) => {
+  const { t } = useTranslation();
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme];
 
@@ -29,7 +31,7 @@ export const EmptyState = ({ icon, title, message, onPress, actionLabel }: Empty
           style={[styles.button, { backgroundColor: theme.maroon }]} 
           onPress={onPress}
         >
-          <Text style={styles.buttonText}>{actionLabel || 'Get Started'}</Text>
+          <Text style={styles.buttonText}>{actionLabel || t('common.ok')}</Text>
         </TouchableOpacity>
       )}
     </View>

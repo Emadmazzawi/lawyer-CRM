@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { I18nManager } from 'react-native';
 import * as Updates from 'expo-updates';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import i18n from '../i18n/config';
+import i18n from '../i18n';
 
 const LANGUAGE_KEY = 'app_language';
 

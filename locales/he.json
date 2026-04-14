@@ -1,31 +1,152 @@
 {
+  "common": {
+    "ok": "אישור",
+    "cancel": "ביטול",
+    "save": "שמור",
+    "delete": "מחק",
+    "error": "שגיאה",
+    "success": "הצלחה",
+    "loading": "טוען...",
+    "user": "משתמש",
+    "add": "הוסף",
+    "or": "או",
+    "min": "דק'"
+  },
   "tabs": {
-    "dashboard": "לוח בקרה",
+    "dashboard": "ראשי",
     "clients": "לקוחות",
-    "reminders": "תזכורות"
+    "reminders": "תזכורות",
+    "routines": "שגרה",
+    "completed": "ארכיון",
+    "history": "היסטוריה"
   },
   "dashboard": {
-    "greeting": "בוקר טוב,",
-    "overview": "סקירת לוח בקרה",
-    "active_countdowns": "ספירות לאחור פעילות",
-    "upcoming_events": "אירועים קרובים",
-    "see_all": "ראה הכל",
+    "greetingMorning": "בוקר טוב",
+    "greetingAfternoon": "צהריים טובים",
+    "greetingEvening": "ערב טוב",
+    "default_user_role": "איש מקצוע משפטי",
+    "activeCountdowns": "ספירה לאחור פעילה",
+    "seeFullList": "לרשימה המלאה",
+    "noDeadlines": "אין מועדים סופיים",
+    "noDeadlinesMsg": "עקוב אחר המועדים הסופיים ותאריכי הדיונים שלך באמצעות כרטיסי ספירה לאחור.",
+    "addDeadline": "הוסף מועד",
+    "upcomingEvents": "אירועים קרובים",
+    "pastArchive": "ארכיון אירועים",
+    "noEvents": "אין אירועים קרובים",
+    "noEventsMsg": "קבע ייעוץ, שימועים ופגישות כדי לראות אותם כאן.",
+    "addEvent": "הוסף אירוע",
+    "overdue": "באיחור",
+    "daysLeft": "נותרו {{days}} ימים",
     "no_date": "לא נקבע תאריך"
   },
   "clients": {
     "title": "לקוחות",
-    "loading": "טוען...",
+    "search_placeholder": "חפש לקוחות...",
+    "noClients": "לא נמצאו לקוחות",
+    "noClientsMessage": "התחל בהוספת הלקוח הראשון שלך לניהול התיקים והמסמכים שלהם.",
+    "addClient": "הוסף לקוח",
     "status": "סטטוס: ",
     "contact": "ליצירת קשר: ",
     "notes": "הערות",
     "add_note_placeholder": "הוסף הערה...",
     "add_button": "הוסף"
   },
-  "reminders": {
-    "priority": "עדיפות: ",
-    "due": "בתאריך: "
+  "statuses": {
+    "consultation": "ייעוץ",
+    "awaitingDocs": "ממתין למסמכים",
+    "inCourt": "בבית המשפט",
+    "closed": "סגור"
   },
-  "common": {
-    "modal": "מודאל"
+  "routines": {
+    "title": "שגרה",
+    "scheduled": "מתוזמן",
+    "flexible": "גמיש",
+    "quickStart": "התחלה מהירה",
+    "deleteRoutine": "מחק שגרה",
+    "deleteConfirm": "האם אתה בטוח שברצונך למחוק שגרה זו?",
+    "noRoutines": "אין שגרות {{tab}} להיום.\nלחץ על + כדי ליצור אחת!",
+    "missed": "הוחמץ",
+    "done": "בוצע",
+    "createStep": "צור צעד חדש",
+    "customStep": "צעד מותאם אישית",
+    "stepNamePlaceholder": "שם הצעד...",
+    "pickStep": "בחר צעד",
+    "categories": {
+      "morning": "☀️ שגרת בוקר",
+      "evening": "🌙 שגרת ערב",
+      "study": "📚 לימודים",
+      "fitness": "💪 כושר",
+      "wellness": "🧘 בריאות"
+    },
+    "presets": {
+      "goals": "כתיבת מטרות",
+      "shower": "מקלחת",
+      "brush": "צחצוח שיניים",
+      "bed": "סידור המיטה",
+      "vitamins": "נטילת ויטמינים",
+      "sunlight": "חשיפה לשמש",
+      "stretch": "מתיחות",
+      "facewash": "שטיפת פנים מהירה",
+      "breakfast": "הכנת ארוחת בוקר",
+      "meditation": "מדיטציה",
+      "water": "שתיית מים",
+      "read": "קריאת ספר",
+      "journal": "כתיבת יומן",
+      "music": "האזנה למוזיקה רגועה",
+      "skincare": "טיפוח פנים לילי",
+      "study": "זמן לימוד",
+      "review": "חזרה על הערות",
+      "workout": "אימון",
+      "run": "ריצה"
+    }
+  },
+  "settings": {
+    "title": "הגדרות",
+    "language": "שפה",
+    "appearance": "מראה",
+    "logout": "התנתק",
+    "logout_error": "שגיאה בהתנתקות",
+    "restart_required": "נדרשת הפעלה מחדש",
+    "restart_msg": "האפליקציה צריכה להפעיל את עצמה מחדש כדי להחיל את כיוון התצוגה החדש.",
+    "themes": {
+      "system": "ברירת מחדל של המערכת",
+      "light": "מצב בהיר",
+      "dark": "מצב כהה"
+    },
+    "languages": {
+      "en": "English",
+      "ar": "العربية",
+      "he": "Hebrew"
+    }
+  },
+  "auth": {
+    "welcome": "ברוך הבא",
+    "email": "כתובת אימייל",
+    "password": "סיסמה",
+    "forgotPassword": "שכחת סיסמה?",
+    "login": "התחבר",
+    "noAccount": "אין לך חשבון? הירשם",
+    "or": "או",
+    "loginGuest": "המשך כאורח",
+    "userNotFound": "פרטי התחברות שגויים.",
+    "loginFailed": "ההתחברות נכשלה",
+    "guestLoginFailed": "התחברות אורח נכשלה",
+    "appName": "Maroon CRM",
+    "appSubtitle": "ארגונית משפטית מודרנית"
+  },
+  "forms": {
+    "clientName": "שם הלקוח",
+    "caseStatus": "סטטוס תיק",
+    "contactInfo": "פרטי קשר",
+    "phone": "מספר טלפון",
+    "email": "כתובת אימייל",
+    "clientNameRequired": "אנא הזן את שם הלקוח",
+    "clientCreated": "הלקוח נוצר בהצלחה",
+    "creationFailed": "היצירה נכשלה",
+    "userNotAuth": "משתמש לא מחובר",
+    "save": "שמור"
+  },
+  "placeholders": {
+    "clientName": "לדוגמה: ישראל ישראלי"
   }
 }

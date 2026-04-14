@@ -7,7 +7,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import i18n from '@/src/i18n/config';
+import i18n from '@/src/i18n';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import * as Updates from 'expo-updates';
@@ -20,12 +20,6 @@ const LANGUAGES = [
   { label: 'Hebrew', value: 'he', flag: '🇮🇱' },
 ];
 
-const THEMES = [
-  { label: 'System Defaults', value: 'system', icon: 'desktop' },
-  { label: 'Light Mode', value: 'light', icon: 'sun-o' },
-  { label: 'Dark Obsidian', value: 'dark', icon: 'moon-o' },
-];
-
 export default function SettingsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -34,6 +28,12 @@ export default function SettingsScreen() {
   const theme = Colors[colorScheme];
   const [currentLang, setCurrentLang] = useState(i18n.language);
   const [currentTheme, setCurrentTheme] = useState('system');
+
+  const THEMES = [
+    { label: t('settings.themes.system'), value: 'system', icon: 'desktop' },
+    { label: t('settings.themes.light'), value: 'light', icon: 'sun-o' },
+    { label: t('settings.themes.dark'), value: 'dark', icon: 'moon-o' },
+  ];
 
   useEffect(() => {
     navigation.setOptions({
@@ -56,7 +56,7 @@ export default function SettingsScreen() {
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
-      Alert.alert('Logout Error', error.message);
+      Alert.alert(t('settings.logout_error'), error.message);
     } else {
       router.replace('/login');
     }
@@ -73,9 +73,9 @@ export default function SettingsScreen() {
         I18nManager.forceRTL(isRTL);
         // On some platforms, a reload is required for RTL to take effect fully
         Alert.alert(
-          'Restart Required',
-          'The application needs to restart to apply the new layout direction.',
-          [{ text: 'OK', onPress: () => Updates.reloadAsync() }]
+          t('settings.restart_required'),
+          t('settings.restart_msg'),
+          [{ text: t('common.ok'), onPress: () => Updates.reloadAsync() }]
         );
       }
     } catch (e) {
@@ -114,7 +114,7 @@ export default function SettingsScreen() {
             >
               <Text style={styles.optionIconText}>{lang.flag}</Text>
               <Text style={[styles.optionLabel, { color: theme.textSecondary }, currentLang === lang.value && { color: '#FFF' }]}>
-                {lang.label}
+                {t(`settings.languages.${lang.value}`)}
               </Text>
               {currentLang === lang.value && (
                 <FontAwesome name="check-circle" size={16} color="#FFF" style={styles.checkIcon} />
@@ -127,7 +127,7 @@ export default function SettingsScreen() {
       <View style={[styles.divider, { backgroundColor: theme.border }]} />
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: theme.text }]}>Appearance</Text>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>{t('settings.appearance')}</Text>
         <View style={styles.optionsGrid}>
           {THEMES.map((t_opt) => (
             <TouchableOpacity

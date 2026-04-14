@@ -5,6 +5,7 @@ import {
   AuthResponse,
   UserResponse
 } from '@supabase/supabase-js';
+import Constants from 'expo-constants';
 
 export const signUp = async (credentials: SignUpWithPasswordCredentials): Promise<AuthResponse> => {
   return await supabase.auth.signUp(credentials);
@@ -39,7 +40,13 @@ export const getSession = async () => {
 };
 
 export const resetPassword = async (email: string) => {
+  const authRedirectUrl = Constants.expoConfig?.extra?.authRedirectUrl;
+  
+  if (!authRedirectUrl) {
+    console.error('AUTH_REDIRECT_URL is not defined in app config extra. Reset password may fail or redirect incorrectly.');
+  }
+
   return await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: 'https://lawyer-crm-hcfq.vercel.app/(auth)/update-password',
+    redirectTo: authRedirectUrl,
   });
 };

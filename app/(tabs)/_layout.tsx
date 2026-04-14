@@ -12,6 +12,7 @@ import { getProfile, Profile } from '@/src/api/profiles';
 import { useRouter } from 'expo-router';
 
 function CustomDrawerContent(props: any) {
+  const { t } = useTranslation();
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? 'light'];
   const router = useRouter();
@@ -47,10 +48,10 @@ function CustomDrawerContent(props: any) {
           </View>
           <View style={styles.profileInfo}>
             <Text style={[styles.profileName, { color: theme.text }]}>
-              {profile?.full_name || 'User'}
+              {profile?.full_name || t('common.user')}
             </Text>
             <Text style={[styles.profileRole, { color: theme.textSecondary }]}>
-              Legal Professional
+              {t('dashboard.default_user_role')}
             </Text>
           </View>
         </View>
@@ -71,9 +72,9 @@ function CustomDrawerContent(props: any) {
           onPress={() => router.push('/settings')}
         >
           <FontAwesome name="cog" size={18} color={theme.textSecondary} />
-          <Text style={[styles.settingsBtnText, { color: theme.textSecondary }]}>Settings</Text>
+          <Text style={[styles.settingsBtnText, { color: theme.textSecondary }]}>{t('settings.title')}</Text>
         </TouchableOpacity>
-        <Text style={[styles.versionText, { color: theme.textMuted }]}>Maroon CRM v1.0.0</Text>
+        <Text style={[styles.versionText, { color: theme.textMuted }]}>{t('auth.appName')} v1.0.0</Text>
       </View>
     </View>
   );
@@ -83,7 +84,7 @@ function DrawerIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>['name'];
   color: string;
 }) {
-  return <FontAwesome size={20} style={{ marginLeft: 4, marginRight: -8, width: 24, textAlign: 'center' }} {...props} />;
+  return <FontAwesome size={20} style={{ marginStart: 4, marginEnd: -8, width: 24, textAlign: 'center' }} {...props} />;
 }
 
 export default function DrawerLayout() {
@@ -111,7 +112,7 @@ export default function DrawerLayout() {
         drawerLabelStyle: {
           fontFamily: Fonts.semiBold,
           fontSize: 15,
-          marginLeft: -8,
+          marginStart: -8,
         },
         drawerStyle: {
           backgroundColor: theme.background,
@@ -121,8 +122,8 @@ export default function DrawerLayout() {
       <Drawer.Screen
         name="index"
         options={{
-          drawerLabel: t('tabs.dashboard', 'Dashboard'),
-          title: t('tabs.dashboard', 'Dashboard'),
+          drawerLabel: t('tabs.dashboard'),
+          title: t('tabs.dashboard'),
           drawerIcon: ({ color, focused }) => <DrawerIcon name="home" color={focused ? '#FFF' : color} />,
           drawerActiveTintColor: '#FFF',
         }}
@@ -130,8 +131,8 @@ export default function DrawerLayout() {
       <Drawer.Screen
         name="clients"
         options={{
-          drawerLabel: t('tabs.clients', 'Clients'),
-          title: t('tabs.clients', 'Clients'),
+          drawerLabel: t('tabs.clients'),
+          title: t('tabs.clients'),
           drawerIcon: ({ color, focused }) => <DrawerIcon name="users" color={focused ? '#FFF' : color} />,
           drawerActiveTintColor: '#FFF',
         }}
@@ -139,8 +140,8 @@ export default function DrawerLayout() {
       <Drawer.Screen
         name="reminders"
         options={{
-          drawerLabel: t('tabs.reminders', 'Reminders'),
-          title: t('tabs.reminders', 'Reminders'),
+          drawerLabel: t('tabs.reminders'),
+          title: t('tabs.reminders'),
           drawerIcon: ({ color, focused }) => <DrawerIcon name="bell" color={focused ? '#FFF' : color} />,
           drawerActiveTintColor: '#FFF',
         }}
@@ -148,8 +149,8 @@ export default function DrawerLayout() {
       <Drawer.Screen
         name="routines"
         options={{
-          drawerLabel: t('tabs.routines', 'Routines'),
-          title: t('tabs.routines', 'Routines'),
+          drawerLabel: t('tabs.routines'),
+          title: t('tabs.routines'),
           drawerIcon: ({ color, focused }) => <DrawerIcon name="tasks" color={focused ? '#FFF' : color} />,
           drawerActiveTintColor: '#FFF',
         }}
@@ -157,8 +158,8 @@ export default function DrawerLayout() {
       <Drawer.Screen
         name="completed"
         options={{
-          drawerLabel: t('tabs.history', 'History'),
-          title: t('tabs.history', 'History'),
+          drawerLabel: t('tabs.history'),
+          title: t('tabs.history'),
           drawerIcon: ({ color, focused }) => <DrawerIcon name="archive" color={focused ? '#FFF' : color} />,
           drawerActiveTintColor: '#FFF',
         }}
@@ -187,7 +188,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   profileInfo: {
-    marginLeft: Spacing.md,
+    marginStart: Spacing.md,
   },
   profileName: {
     fontFamily: Fonts.bold,

@@ -1,5 +1,5 @@
 -- routines_v3_migration.sql
--- Run this in your Supabase SQL Editor
+-- Description: Enhances routines and routine_steps tables and adds routine_completions table.
 
 -- 1. Add schedule columns to routines
 ALTER TABLE routines ADD COLUMN IF NOT EXISTS schedule_type VARCHAR DEFAULT 'scheduled';
@@ -19,11 +19,21 @@ CREATE TABLE IF NOT EXISTS routine_completions (
     completed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     UNIQUE(routine_id, date_string)
 );
+COMMENT ON TABLE routine_completions IS 'Tracks daily completions of routines by users.';
 
 -- Enable RLS
 ALTER TABLE routine_completions ENABLE ROW LEVEL SECURITY;
 
 -- Routine Completions Policies
-CREATE POLICY "Users can create their own completions" ON routine_completions FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Users can view their own completions" ON routine_completions FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Users can delete their own completions" ON routine_completions FOR DELETE USING (auth.uid() = user_id);
+DO $$ BEGIN
+    DROP POLICY IF EXISTS "Users can create their own completions" ON routine_completions;
+    CREATE POLICY "Users can create their own completions" ON routine_completions FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+    DROP POLICY IF EXISTS "Users can view their own completions" ON routine_completions;
+    CREATE POLICY "Users can view their own completions" ON routine_completions FOR SELECT USING (auth.uid() = user_id);
+
+    DROP POLICY IF EXISTS "Users can delete their own completions" ON routine_completions;
+    CREATE POLICY "Users can delete their own completions" ON routine_completions FOR DELETE USING (auth.uid() = user_id);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;

@@ -1,5 +1,5 @@
-import React, { useState, createElement } from 'react';
-import { StyleSheet, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, Alert, View as RNView, Platform } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, Alert, View as RNView } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { useRouter, useLocalSearchParams, useNavigation } from 'expo-router';
 import { createEventTask, EventType } from '@/src/api/events_and_tasks';
@@ -8,9 +8,8 @@ import { FontAwesome } from '@expo/vector-icons';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { Fonts, BorderRadius, Spacing } from '@/constants/Theme';
-import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
-import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { AdaptiveDateTimePicker } from '@/components/AdaptiveDateTimePicker';
 
 const TYPE_OPTIONS: { label: string; value: EventType; icon: any }[] = [
   { label: 'Countdown', value: 'countdown', icon: 'hourglass-half' },
@@ -33,11 +32,7 @@ export default function CreateEventScreen() {
 
   const [title, setTitle] = useState('');
   const [type, setType] = useState<EventType>((params.type as EventType) || 'calendar_event');
-  const [dueDate, setDueDate] = useState(new Date());
-  
-  // Mobile Picker States
-  const [showPicker, setShowPicker] = useState(false);
-  const [pickerMode, setPickerMode] = useState<'date' | 'time'>('date');
+  const [dueDate, setDueDate] = useState<Date | null>(new Date());
   
   const [priority, setPriority] = useState('Medium');
   const [loading, setLoading] = useState(false);
@@ -51,17 +46,15 @@ export default function CreateEventScreen() {
       return;
     }
 
+    if (!dueDate || isNaN(dueDate.getTime())) {
+      Alert.alert('Invalid Date', 'Please select a valid date and time.');
+      return;
+    }
+
     setLoading(true);
     const { data: userData } = await getCurrentUser();
     if (!userData?.user) {
       Alert.alert('Error', 'User not authenticated');
-      setLoading(false);
-      return;
-    }
-
-    
-    if (isNaN(dueDate.getTime())) {
-      Alert.alert('Invalid Date', 'Please select a valid date and time.');
       setLoading(false);
       return;
     }
@@ -83,128 +76,6 @@ export default function CreateEventScreen() {
       router.back();
     }
   };
-
-  const onDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
-    if (Platform.OS === 'android') {
-      setShowPicker(false);
-    }
-    if (selectedDate) {
-      setDueDate(selectedDate);
-    }
-  };
-
-  const openPicker = (mode: 'date' | 'time') => {
-    setPickerMode(mode);
-    setShowPicker(true);
-  };
-
-  const renderWebDatePicker = () => (
-    <RNView style={styles.webDateContainer}>
-      <RNView style={{ flex: 1, position: 'relative' }}>
-        <Text style={[styles.microLabel, { color: theme.text }]}>{t('forms.date', 'Date')}</Text>
-        {Platform.OS === 'web' && createElement('input', {
-          type: 'date',
-          value: format(dueDate, 'yyyy-MM-dd'),
-          onChange: (e: any) => {
-            const val = e.target.value;
-            if (!val) return;
-            const [y, m, d] = val.split('-');
-            if (y && m && d && y.length === 4) {
-              const newD = new Date(dueDate);
-              newD.setFullYear(Number(y), Number(m) - 1, Number(d));
-              if (!isNaN(newD.getTime())) setDueDate(newD);
-            }
-          },
-          onClick: (e: any) => {
-            try { e.target.showPicker(); } catch (err) {}
-          },
-          style: {
-            padding: '14px',
-            borderRadius: BorderRadius.lg,
-            borderWidth: 1,
-            borderStyle: 'solid',
-            borderColor: theme.border,
-            backgroundColor: theme.surfaceElevated,
-            color: theme.text,
-            fontSize: '16px',
-            cursor: 'pointer',
-            width: '100%',
-            boxSizing: 'border-box'
-          }
-        })}
-        <FontAwesome name="calendar" size={16} color={theme.maroon} style={{ position: 'absolute', right: 14, top: 38, pointerEvents: 'none' }} />
-      </RNView>
-      <RNView style={{ flex: 1, position: 'relative' }}>
-        <Text style={[styles.microLabel, { color: theme.text }]}>{t('forms.time', 'Time')}</Text>
-        {Platform.OS === 'web' && createElement('input', {
-          type: 'time',
-          value: format(dueDate, 'HH:mm'),
-          onChange: (e: any) => {
-            const val = e.target.value;
-            if (!val) return;
-            const [h, m] = val.split(':');
-            if (h && m) {
-              const newD = new Date(dueDate);
-              newD.setHours(Number(h), Number(m));
-              if (!isNaN(newD.getTime())) setDueDate(newD);
-            }
-          },
-          onClick: (e: any) => {
-            try { e.target.showPicker(); } catch (err) {}
-          },
-          style: {
-            padding: '14px',
-            borderRadius: BorderRadius.lg,
-            borderWidth: 1,
-            borderStyle: 'solid',
-            borderColor: theme.border,
-            backgroundColor: theme.surfaceElevated,
-            color: theme.text,
-            fontSize: '16px',
-            cursor: 'pointer',
-            width: '100%',
-            boxSizing: 'border-box'
-          }
-        })}
-        <FontAwesome name="clock-o" size={16} color={theme.maroon} style={{ position: 'absolute', right: 14, top: 38, pointerEvents: 'none' }} />
-      </RNView>
-    </RNView>
-  );
-
-  const renderNativeDatePicker = () => (
-    <RNView style={styles.webDateContainer}>
-      <TouchableOpacity 
-        style={[styles.dateTimeBox, { borderColor: theme.border, backgroundColor: theme.surfaceElevated }]}
-        onPress={() => openPicker('date')}
-      >
-        <FontAwesome name="calendar" size={18} color={theme.maroon} />
-        <Text style={[styles.dateText, { color: theme.text }]}>{format(dueDate, 'MMM d, yyyy')}</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity 
-        style={[styles.dateTimeBox, { borderColor: theme.border, backgroundColor: theme.surfaceElevated }]}
-        onPress={() => openPicker('time')}
-      >
-        <FontAwesome name="clock-o" size={18} color={theme.maroon} />
-        <Text style={[styles.dateText, { color: theme.text }]}>{format(dueDate, 'p')}</Text>
-      </TouchableOpacity>
-
-      {showPicker && (
-        <DateTimePicker
-          value={dueDate}
-          mode={pickerMode}
-          display={
-            pickerMode === 'date' 
-              ? (Platform.OS === 'ios' ? 'inline' : 'calendar') 
-              : 'spinner'
-          }
-          onChange={onDateChange}
-          minimumDate={new Date()}
-          textColor={theme.text}
-        />
-      )}
-    </RNView>
-  );
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: theme.background }]} contentContainerStyle={styles.content}>
@@ -242,8 +113,14 @@ export default function CreateEventScreen() {
         ))}
       </RNView>
 
-      <Text style={[styles.label, { color: theme.text }]}>{t('forms.dateAndTime', 'DATE & TIME')}</Text>
-      {Platform.OS === 'web' ? renderWebDatePicker() : renderNativeDatePicker()}
+      <AdaptiveDateTimePicker
+        label={t('forms.dateAndTime', 'DATE & TIME')}
+        value={dueDate}
+        onChange={setDueDate}
+        mode="datetime"
+        theme={theme}
+        minimumDate={new Date()}
+      />
 
       <Text style={[styles.label, { color: theme.text, marginTop: 12 }]}>{t('forms.priority', 'PRIORITY')}</Text>
       <RNView style={styles.priorityContainer}>
@@ -293,12 +170,6 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
-  microLabel: {
-    fontFamily: Fonts.semiBold,
-    fontSize: 12,
-    marginBottom: 6,
-    marginLeft: 2,
-  },
   input: {
     fontFamily: Fonts.medium,
     borderWidth: 1,
@@ -323,25 +194,6 @@ const styles = StyleSheet.create({
   typeText: {
     fontFamily: Fonts.bold,
     fontSize: 12,
-  },
-  webDateContainer: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: Spacing.lg,
-  },
-  dateTimeBox: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
-  },
-  dateText: {
-    fontFamily: Fonts.semiBold,
-    marginStart: 10,
-    fontSize: 15,
   },
   priorityContainer: {
     flexDirection: 'row',

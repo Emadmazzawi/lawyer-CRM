@@ -18,9 +18,10 @@ import { Session } from '@supabase/supabase-js';
 
 import { useColorScheme } from '@/components/useColorScheme';
 import { useNotifications } from '@/src/hooks/useNotifications';
-import '@/src/i18n/config';
+import '@/src/i18n';
 import { I18nManager, Appearance } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
 
 // Force allow RTL
 I18nManager.allowRTL(true);
@@ -67,10 +68,15 @@ export default function RootLayout() {
     return null;
   }
 
-  return <RootLayoutNav />;
+  return (
+    <LocalizationProvider>
+      <RootLayoutNav />
+    </LocalizationProvider>
+  );
 }
 
 function RootLayoutNav() {
+  const { t } = useTranslation();
   const colorScheme = useColorScheme();
   const [session, setSession] = useState<Session | null>(null);
   const [initialized, setInitialized] = useState(false);
@@ -111,26 +117,24 @@ function RootLayoutNav() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <LocalizationProvider>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <Stack screenOptions={{
-            headerStyle: { backgroundColor: colorScheme === 'dark' ? '#0D0D0F' : '#FFF' },
-            headerTitleStyle: { fontFamily: 'Inter_700Bold', fontSize: 18 },
-            headerTintColor: colorScheme === 'dark' ? '#F0F0F5' : '#111111',
-            headerShadowVisible: false,
-          }}>
-            <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
-            <Stack.Screen name="(auth)/register" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="create-client" options={{ title: 'New Client', presentation: 'formSheet' }} />
-            <Stack.Screen name="create-event" options={{ title: 'New Entry', presentation: 'formSheet' }} />
-            <Stack.Screen name="create-routine" options={{ title: 'New Routine', presentation: 'formSheet' }} />
-            <Stack.Screen name="run-routine/[id]" options={{ presentation: 'fullScreenModal', headerShown: false }} />
-            <Stack.Screen name="settings" options={{ title: 'Settings', presentation: 'card', animation: 'slide_from_right' }} />
-            <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-          </Stack>
-        </ThemeProvider>
-      </LocalizationProvider>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <Stack screenOptions={{
+          headerStyle: { backgroundColor: colorScheme === 'dark' ? '#0D0D0F' : '#FFF' },
+          headerTitleStyle: { fontFamily: 'Inter_700Bold', fontSize: 18 },
+          headerTintColor: colorScheme === 'dark' ? '#F0F0F5' : '#111111',
+          headerShadowVisible: false,
+        }}>
+          <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
+          <Stack.Screen name="(auth)/register" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="create-client" options={{ title: t('clients.addClient'), presentation: 'formSheet' }} />
+          <Stack.Screen name="create-event" options={{ title: t('dashboard.addEvent'), presentation: 'formSheet' }} />
+          <Stack.Screen name="create-routine" options={{ title: t('routines.title'), presentation: 'formSheet' }} />
+          <Stack.Screen name="run-routine/[id]" options={{ presentation: 'fullScreenModal', headerShown: false }} />
+          <Stack.Screen name="settings" options={{ title: t('settings.title'), presentation: 'card', animation: 'slide_from_right' }} />
+          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+        </Stack>
+      </ThemeProvider>
     </GestureHandlerRootView>
   );
 }

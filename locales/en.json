@@ -1,31 +1,152 @@
 {
+  "common": {
+    "ok": "OK",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "error": "Error",
+    "success": "Success",
+    "loading": "Loading...",
+    "user": "User",
+    "add": "Add",
+    "or": "or",
+    "min": "min"
+  },
   "tabs": {
     "dashboard": "Dashboard",
     "clients": "Clients",
-    "reminders": "Reminders"
+    "reminders": "Reminders",
+    "routines": "Routines",
+    "completed": "Archive",
+    "history": "History"
   },
   "dashboard": {
-    "greeting": "Good morning,",
-    "overview": "Dashboard Overview",
-    "active_countdowns": "Active Countdowns",
-    "upcoming_events": "Upcoming Events",
-    "see_all": "See all",
+    "greetingMorning": "Good morning",
+    "greetingAfternoon": "Good afternoon",
+    "greetingEvening": "Good evening",
+    "default_user_role": "Legal Professional",
+    "activeCountdowns": "Active Countdowns",
+    "seeFullList": "See full list",
+    "noDeadlines": "No Deadlines",
+    "noDeadlinesMsg": "Keep track of your case deadlines and court dates with countdown cards.",
+    "addDeadline": "Add Deadline",
+    "upcomingEvents": "Upcoming Events",
+    "pastArchive": "Past Archive",
+    "noEvents": "No Upcoming Events",
+    "noEventsMsg": "Schedule consultations, hearings, and meetings to see them listed here.",
+    "addEvent": "Add Event",
+    "overdue": "OVERDUE",
+    "daysLeft": "{{days}} days left",
     "no_date": "No date set"
   },
   "clients": {
     "title": "Clients",
-    "loading": "Loading...",
+    "search_placeholder": "Search clients...",
+    "noClients": "No Clients Found",
+    "noClientsMessage": "Start by adding your first client to manage their cases and documents.",
+    "addClient": "Add Client",
     "status": "Status: ",
     "contact": "Contact: ",
     "notes": "Notes",
     "add_note_placeholder": "Add a note...",
     "add_button": "Add"
   },
-  "reminders": {
-    "priority": "Priority: ",
-    "due": "Due: "
+  "statuses": {
+    "consultation": "Consultation",
+    "awaitingDocs": "Awaiting Docs",
+    "inCourt": "In Court",
+    "closed": "Closed"
   },
-  "common": {
-    "modal": "Modal"
+  "routines": {
+    "title": "Routines",
+    "scheduled": "Scheduled",
+    "flexible": "Flexible",
+    "quickStart": "Quick Start",
+    "deleteRoutine": "Delete Routine",
+    "deleteConfirm": "Are you sure you want to delete this routine?",
+    "noRoutines": "No {{tab}} routines for today.\nTap + to create one!",
+    "missed": "Missed",
+    "done": "Done",
+    "createStep": "Create new step",
+    "customStep": "CUSTOM STEP",
+    "stepNamePlaceholder": "Step name...",
+    "pickStep": "PICK STEP",
+    "categories": {
+      "morning": "☀️ Morning Routine",
+      "evening": "🌙 Evening Routine",
+      "study": "📚 Study",
+      "fitness": "💪 Fitness",
+      "wellness": "🧘 Wellness"
+    },
+    "presets": {
+      "goals": "Write down goals",
+      "shower": "Take a shower",
+      "brush": "Brush my teeth",
+      "bed": "Make my bed",
+      "vitamins": "Take vitamins",
+      "sunlight": "Get some sunlight",
+      "stretch": "Stretch",
+      "facewash": "Quick face wash",
+      "breakfast": "Make breakfast",
+      "meditation": "Meditation Session",
+      "water": "Drink water",
+      "read": "Read a book",
+      "journal": "Journal",
+      "music": "Listen to calm music",
+      "skincare": "Night skincare",
+      "study": "Study session",
+      "review": "Review notes",
+      "workout": "Workout",
+      "run": "Go for a run"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "appearance": "Appearance",
+    "logout": "Log Out",
+    "logout_error": "Logout Error",
+    "restart_required": "Restart Required",
+    "restart_msg": "The application needs to restart to apply the new layout direction.",
+    "themes": {
+      "system": "System Defaults",
+      "light": "Light Mode",
+      "dark": "Dark Obsidian"
+    },
+    "languages": {
+      "en": "English",
+      "ar": "العربية",
+      "he": "Hebrew"
+    }
+  },
+  "auth": {
+    "welcome": "Welcome Back",
+    "email": "Email Address",
+    "password": "Password",
+    "forgotPassword": "Forgot Password?",
+    "login": "Sign In",
+    "noAccount": "Don't have an account? Sign Up",
+    "or": "OR",
+    "loginGuest": "Continue as Guest",
+    "userNotFound": "Invalid login credentials.",
+    "loginFailed": "Login Failed",
+    "guestLoginFailed": "Guest Login Failed",
+    "appName": "Maroon CRM",
+    "appSubtitle": "Modern Legal Organizer"
+  },
+  "forms": {
+    "clientName": "Client Name",
+    "caseStatus": "Case Status",
+    "contactInfo": "Contact Information",
+    "phone": "Phone Number",
+    "email": "Email Address",
+    "clientNameRequired": "Please enter a client name",
+    "clientCreated": "Client created successfully",
+    "creationFailed": "Creation Failed",
+    "userNotAuth": "User not authenticated",
+    "save": "Save"
+  },
+  "placeholders": {
+    "clientName": "e.g. John Doe"
   }
 }

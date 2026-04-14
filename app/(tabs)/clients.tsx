@@ -38,16 +38,6 @@ const ClientListItem = React.memo(({ item, onPress, theme, t }: { item: Partial<
   </TouchableOpacity>
 ));
 
-const getStatusColor = (status?: string) => {
-    switch (status) {
-        case 'Consultation': return '#E3F2FD';
-        case 'Awaiting Docs': return '#FFF3E0';
-        case 'In Court': return '#F3E5F5';
-        case 'Closed': return '#E8F5E9';
-        default: return '#F5F5F5';
-    }
-};
-
 export default function ClientsScreen() {
   const { t } = useTranslation();
   const [clients, setClients] = useState<Partial<Client>[]>([]);
@@ -130,7 +120,7 @@ export default function ClientsScreen() {
         <FontAwesome name="search" size={16} color={theme.textMuted} style={styles.searchIcon} />
         <TextInput
           style={[styles.searchInput, { color: theme.text, backgroundColor: theme.surfaceElevated, borderColor: theme.border }]}
-          placeholder="Search clients..."
+          placeholder={t('clients.search_placeholder')}
           placeholderTextColor={theme.textMuted}
           value={searchQuery}
           onChangeText={setSearchQuery}
@@ -139,7 +129,7 @@ export default function ClientsScreen() {
 
       {loading ? (
         <LoadingSkeleton />
-      ) : clients.length === 0 ? (
+      ) : filteredClients.length === 0 ? (
         <View style={styles.emptyContainer}>
           <EmptyState 
             icon="users" 
@@ -242,7 +232,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: Spacing.sm,
+    marginEnd: Spacing.sm,
   },
   avatarText: {
     fontFamily: Fonts.bold,
