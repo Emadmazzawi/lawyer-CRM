@@ -8,12 +8,10 @@ import { useTranslation } from 'react-i18next';
 import { useNavigation } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import i18n from '@/src/i18n';
-import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import * as Updates from 'expo-updates';
-import { Appearance } from 'react-native';
 import { Fonts, BorderRadius, Spacing } from '@/constants/Theme';
-import { useAppTheme } from './_layout';
+import { useAppTheme } from '@/src/providers/ThemeContext';
 
 const LANGUAGES = [
   { label: 'English', value: 'en', flag: '🇬🇧' },
@@ -25,10 +23,9 @@ export default function SettingsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const navigation = useNavigation();
-  const { colorScheme, setTheme } = useAppTheme();
+  const { colorScheme, themeMode, setTheme } = useAppTheme();
   const theme = Colors[colorScheme];
   const [currentLang, setCurrentLang] = useState(i18n.language);
-  const [currentTheme, setCurrentTheme] = useState('system');
 
   const THEMES = [
     { label: t('settings.themes.system'), value: 'system', icon: 'desktop' },
@@ -40,26 +37,14 @@ export default function SettingsScreen() {
     navigation.setOptions({
       title: t('settings.title')
     });
-    loadThemePreference();
   }, [currentLang, t]);
-
-  const loadThemePreference = async () => {
-    try {
-      const storedTheme = await AsyncStorage.getItem('app_theme');
-      if (storedTheme) {
-        setCurrentTheme(storedTheme);
-      }
-    } catch (e) {
-      console.error('Failed to load theme preference', e);
-    }
-  };
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
       Alert.alert(t('settings.logout_error'), error.message);
     } else {
-      router.replace('/login');
+      router.replace('/(auth)/login');
     }
   };
 
@@ -86,8 +71,7 @@ export default function SettingsScreen() {
 
   const changeTheme = async (themeValue: string) => {
     try {
-      setCurrentTheme(themeValue);
-      setTheme(themeValue as any);
+      await setTheme(themeValue as any);
     } catch (e) {
       console.error('Failed to change theme', e);
     }
@@ -131,15 +115,15 @@ export default function SettingsScreen() {
               style={[
                 styles.optionButton,
                 { backgroundColor: theme.surface, borderColor: theme.border },
-                currentTheme === t_opt.value && { backgroundColor: theme.maroon, borderColor: theme.maroon },
+                themeMode === t_opt.value && { backgroundColor: theme.maroon, borderColor: theme.maroon },
               ]}
               onPress={() => changeTheme(t_opt.value)}
             >
-              <FontAwesome name={t_opt.icon as any} size={18} color={currentTheme === t_opt.value ? '#FFF' : theme.textSecondary} style={{ marginEnd: 12, width: 20, textAlign: 'center' }} />
-              <Text style={[styles.optionLabel, { color: theme.textSecondary }, currentTheme === t_opt.value && { color: '#FFF' }]}>
+              <FontAwesome name={t_opt.icon as any} size={18} color={themeMode === t_opt.value ? '#FFF' : theme.textSecondary} style={{ marginEnd: 12, width: 20, textAlign: 'center' }} />
+              <Text style={[styles.optionLabel, { color: theme.textSecondary }, themeMode === t_opt.value && { color: '#FFF' }]}>
                 {t_opt.label}
               </Text>
-              {currentTheme === t_opt.value && (
+              {themeMode === t_opt.value && (
                 <FontAwesome name="check-circle" size={16} color="#FFF" style={styles.checkIcon} />
               )}
             </TouchableOpacity>

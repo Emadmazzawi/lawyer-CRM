@@ -1,5 +1,5 @@
-import { StyleSheet, TextInput, TouchableOpacity, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
-import { Text, View } from '@/components/Themed';
+import { StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity } from 'react-native';
+import { Text, View, StyledInput, PrimaryButton } from '@/components/Themed';
 import React, { useState, useEffect } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { createCase, CaseStatus } from '@/src/api/cases';
@@ -9,6 +9,7 @@ import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useTranslation } from 'react-i18next';
 import { Picker } from '@react-native-picker/picker';
+import { Spacing, BorderRadius, Fonts } from '@/constants/Theme';
 
 export default function CreateCaseScreen() {
   const router = useRouter();
@@ -44,12 +45,12 @@ export default function CreateCaseScreen() {
 
   const handleCreate = async () => {
     if (!title.trim()) {
-      Alert.alert('Error', 'Please enter a case title');
+      Alert.alert(t('common.error'), t('forms.caseTitleRequired', 'Please enter a case title'));
       return;
     }
 
     if (!selectedClientId) {
-      Alert.alert('Error', 'Please select a client');
+      Alert.alert(t('common.error'), t('forms.clientRequired', 'Please select a client'));
       return;
     }
 
@@ -57,7 +58,7 @@ export default function CreateCaseScreen() {
 
     const { data: userData } = await getCurrentUser();
     if (!userData?.user) {
-      Alert.alert('Error', 'User not authenticated');
+      Alert.alert(t('common.error'), t('forms.userNotAuth'));
       setLoading(false);
       return;
     }
@@ -70,11 +71,11 @@ export default function CreateCaseScreen() {
       status: status,
     });
 
+    setLoading(false);
     if (error) {
-      Alert.alert('Error', error.message);
-      setLoading(false);
+      Alert.alert(t('common.error'), error.message);
     } else {
-      Alert.alert('Success', 'Case created successfully', [
+      Alert.alert(t('common.success'), t('forms.caseCreated', 'Case created successfully'), [
         { text: 'OK', onPress: () => router.back() }
       ]);
     }
@@ -89,18 +90,19 @@ export default function CreateCaseScreen() {
         style={[styles.container, { backgroundColor: theme.background }]}
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
             <Text style={[styles.title, { color: theme.text }]}>New Matter / Case</Text>
-            <Text style={styles.subtitle}>Open a new legal matter for a client.</Text>
+            <Text style={[styles.subtitle, { color: theme.textSecondary }]}>Open a new legal matter for a client.</Text>
         </View>
 
         <View style={styles.form}>
             {/* Client Selection */}
             <View style={styles.inputGroup}>
-                <Text style={styles.label}>CLIENT</Text>
+                <Text style={[styles.label, { color: theme.textSecondary }]}>CLIENT</Text>
                 {clientsLoading ? (
-                    <ActivityIndicator style={{ alignSelf: 'flex-start' }} />
+                    <ActivityIndicator style={{ alignSelf: 'flex-start' }} color={theme.maroon} />
                 ) : (
                     <View style={[styles.pickerContainer, { borderColor: theme.border, backgroundColor: theme.surfaceElevated }]}>
                         <Picker
@@ -117,32 +119,22 @@ export default function CreateCaseScreen() {
                 )}
             </View>
 
-            {/* Title */}
-            <View style={styles.inputGroup}>
-                <Text style={[styles.label, { color: theme.textSecondary }]}>CASE TITLE</Text>
-                <TextInput
-                    style={[styles.input, { borderColor: theme.border, backgroundColor: theme.surfaceElevated, color: theme.text }]}
-                    placeholder="e.g. Smith v. Jones"
-                    placeholderTextColor={theme.textMuted}
-                    value={title}
-                    onChangeText={setTitle}
-                />
-            </View>
+            <StyledInput
+                label="CASE TITLE"
+                placeholder="e.g. Smith v. Jones"
+                value={title}
+                onChangeText={setTitle}
+            />
 
-            {/* Description */}
-            <View style={styles.inputGroup}>
-                <Text style={[styles.label, { color: theme.textSecondary }]}>DESCRIPTION</Text>
-                <TextInput
-                    style={[styles.input, styles.textArea, { borderColor: theme.border, backgroundColor: theme.surfaceElevated, color: theme.text }]}
-                    placeholder="Brief details about the matter..."
-                    placeholderTextColor={theme.textMuted}
-                    value={description}
-                    onChangeText={setDescription}
-                    multiline
-                    numberOfLines={4}
-                    textAlignVertical="top"
-                />
-            </View>
+            <StyledInput
+                label="DESCRIPTION"
+                placeholder="Brief details about the matter..."
+                value={description}
+                onChangeText={setDescription}
+                multiline
+                numberOfLines={4}
+                style={{ height: 100, textAlignVertical: 'top', paddingTop: 16 }}
+            />
 
             {/* Status */}
             <View style={styles.inputGroup}>
@@ -167,20 +159,13 @@ export default function CreateCaseScreen() {
                     ))}
                 </View>
             </View>
-
         </View>
 
-        <TouchableOpacity 
-            style={[styles.submitButton, { backgroundColor: theme.maroon }]} 
+        <PrimaryButton
+            title="Create Case"
             onPress={handleCreate}
-            disabled={loading}
-        >
-            {loading ? (
-                <ActivityIndicator color="#FFF" />
-            ) : (
-                <Text style={styles.submitButtonText}>Create Case</Text>
-            )}
-        </TouchableOpacity>
+            loading={loading}
+        />
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -191,8 +176,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: 24,
-    paddingBottom: 40,
+    padding: Spacing.xl,
+    paddingBottom: 60,
   },
   header: {
     marginBottom: 30,
@@ -200,44 +185,32 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 32,
-    fontWeight: '800',
+    fontFamily: Fonts.black,
     marginBottom: 8,
+    letterSpacing: -1,
   },
   subtitle: {
     fontSize: 15,
-    color: '#666',
-    fontWeight: '500',
+    fontFamily: Fonts.medium,
   },
   form: {
     backgroundColor: 'transparent',
-    marginBottom: 30,
+    marginBottom: Spacing.xl,
   },
   inputGroup: {
-    marginBottom: 20,
+    marginBottom: Spacing.lg,
     backgroundColor: 'transparent',
   },
   label: {
     fontSize: 12,
-    fontWeight: '700',
-    color: '#999',
+    fontFamily: Fonts.bold,
     marginBottom: 8,
-    marginLeft: 4,
+    textTransform: 'uppercase',
     letterSpacing: 1,
-  },
-  input: {
-    borderWidth: 1,
-    borderRadius: 16,
-    padding: 16,
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  textArea: {
-    height: 100,
-    paddingTop: 16,
   },
   pickerContainer: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: BorderRadius.lg,
     overflow: 'hidden',
   },
   statusContainer: {
@@ -247,30 +220,13 @@ const styles = StyleSheet.create({
   },
   statusChip: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingVertical: 14,
+    borderRadius: BorderRadius.pill,
     borderWidth: 1,
     alignItems: 'center',
   },
   statusChipText: {
     fontSize: 14,
-    fontWeight: '700',
-    color: '#666',
-  },
-  submitButton: {
-    padding: 18,
-    borderRadius: 16,
-    alignItems: 'center',
-    marginTop: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 3,
-  },
-  submitButtonText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
   },
 });

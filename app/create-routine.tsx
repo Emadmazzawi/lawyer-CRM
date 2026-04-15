@@ -173,7 +173,7 @@ export default function CreateRoutineScreen() {
           {/* Alarm Row */}
           <View style={styles.scheduleRow}>
             <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'transparent' }}>
-              <FontAwesome name="bell" size={18} color={theme.textSecondary} style={{ marginRight: 12 }} />
+              <FontAwesome name="bell" size={18} color={theme.textSecondary} style={{ marginEnd: 12 }} />
               <View style={{ backgroundColor: 'transparent' }}>
                 <Text style={[styles.scheduleLabel, { color: theme.text }]}>Alarm</Text>
                 <Text style={[styles.scheduleSub, { color: theme.textMuted }]}>Rings until you dismiss</Text>
@@ -241,7 +241,7 @@ export default function CreateRoutineScreen() {
               <Text style={[styles.stepTitle, { color: theme.text }]}>{step.title}</Text>
             </View>
             <Text style={[styles.stepDuration, { color: theme.textMuted }]}>{Math.round(step.duration_in_seconds / 60)} min</Text>
-            <TouchableOpacity onPress={() => handleRemoveStep(index)} style={{ paddingLeft: 10 }}>
+            <TouchableOpacity onPress={() => handleRemoveStep(index)} style={{ paddingStart: 10 }}>
               <FontAwesome name="times-circle" size={18} color={theme.textMuted} />
             </TouchableOpacity>
           </View>
@@ -252,7 +252,7 @@ export default function CreateRoutineScreen() {
           style={[styles.addStepDashed, { backgroundColor: theme.background, borderColor: theme.border }]}
           onPress={() => setShowStepModal(true)}
         >
-          <FontAwesome name="plus" size={14} color={theme.textMuted} style={{ marginRight: 8 }} />
+          <FontAwesome name="plus" size={14} color={theme.textMuted} style={{ marginEnd: 8 }} />
           <Text style={[styles.addStepText, { color: theme.textMuted }]}>Add step</Text>
         </TouchableOpacity>
 
@@ -297,7 +297,6 @@ const styles = StyleSheet.create({
   },
   totalBadgeText: {
     fontFamily: Fonts.semiBold,
-    color: '#111827',
     fontSize: 13,
   },
   label: {
@@ -310,9 +309,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     padding: Spacing.md,
     borderRadius: 16,
-    backgroundColor: '#F9FAFB',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
     marginBottom: 4,
   },
   charCount: {
@@ -324,8 +321,6 @@ const styles = StyleSheet.create({
   scheduleCard: {
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-    backgroundColor: '#FFFFFF',
     padding: Spacing.md,
     marginBottom: Spacing.lg,
   },
@@ -364,8 +359,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: BorderRadius.pill,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-    backgroundColor: '#FFFFFF',
   },
   dayPillText: {
     fontFamily: Fonts.bold,
@@ -402,13 +395,11 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-    backgroundColor: '#FFFFFF',
     marginBottom: Spacing.sm,
   },
   stepEmoji: {
     fontSize: 24,
-    marginRight: Spacing.md,
+    marginEnd: Spacing.md,
   },
   stepTitle: {
     fontFamily: Fonts.semiBold,
@@ -426,8 +417,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1.5,
     borderStyle: 'dashed',
-    borderColor: '#D1D5DB',
-    backgroundColor: '#F9FAFB',
     marginBottom: Spacing.lg,
   },
   addStepText: {
@@ -441,9 +430,7 @@ const styles = StyleSheet.create({
     right: Spacing.lg,
     paddingVertical: 18,
     borderRadius: BorderRadius.pill,
-    backgroundColor: '#111827',
     alignItems: 'center',
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 12,

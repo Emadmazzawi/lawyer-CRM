@@ -25,10 +25,10 @@ export const EmptyState = ({ icon, title, message, onPress, actionLabel }: Empty
         <FontAwesome name={icon} size={40} color={theme.maroon} />
       </View>
       <Text style={[styles.title, { color: theme.text }]}>{title}</Text>
-      <Text style={styles.message}>{message}</Text>
+      <Text style={[styles.message, { color: theme.textSecondary }]}>{message}</Text>
       {onPress && (
         <TouchableOpacity 
-          style={[styles.button, { backgroundColor: theme.maroon }]} 
+          style={[styles.button, { backgroundColor: theme.maroon, shadowColor: theme.text }]} 
           onPress={onPress}
         >
           <Text style={styles.buttonText}>{actionLabel || t('common.ok')}</Text>
@@ -63,7 +63,6 @@ const styles = StyleSheet.create({
   message: {
     fontFamily: Fonts.medium,
     fontSize: 14,
-    color: '#666',
     textAlign: 'center',
     marginBottom: Spacing.lg,
     lineHeight: 20,
@@ -72,7 +71,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
     borderRadius: BorderRadius.pill,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 8,

@@ -10,18 +10,18 @@ import {
 } from '@expo-google-fonts/inter';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect, useState, createContext, useContext } from 'react';
+import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { supabase } from '@/src/lib/supabase';
 import { Session } from '@supabase/supabase-js';
 
-import { useColorScheme as useSystemColorScheme } from '@/components/useColorScheme';
 import { useNotifications } from '@/src/hooks/useNotifications';
 import '@/src/i18n';
-import { I18nManager, Appearance } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { I18nManager } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { AppThemeProvider, useAppTheme } from '@/src/providers/ThemeContext';
+import Colors from '@/constants/Colors';
 
 // Force allow RTL
 I18nManager.allowRTL(true);
@@ -36,14 +36,15 @@ export const unstable_settings = {
 
 SplashScreen.preventAutoHideAsync();
 
-const ThemeContext = createContext<{
-  colorScheme: 'light' | 'dark';
-  setTheme: (theme: 'light' | 'dark' | 'system') => void;
-}>({ colorScheme: 'light', setTheme: () => {} });
-
-export const useAppTheme = () => useContext(ThemeContext);
-
 export default function RootLayout() {
+  return (
+    <AppThemeProvider>
+      <RootLayoutContent />
+    </AppThemeProvider>
+  );
+}
+
+function RootLayoutContent() {
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     Inter_400Regular,
@@ -53,22 +54,11 @@ export default function RootLayout() {
     Inter_900Black,
   });
 
-  const systemColorScheme = useSystemColorScheme();
-  const [appTheme, setAppTheme] = useState<'light' | 'dark' | 'system'>('system');
-  const [initialized, setInitialized] = useState(false);
+  const { colorScheme, initialized } = useAppTheme();
 
   useEffect(() => {
     if (error) throw error;
   }, [error]);
-
-  useEffect(() => {
-    AsyncStorage.getItem('app_theme').then((theme) => {
-      if (theme) {
-        setAppTheme(theme as any);
-      }
-      setInitialized(true);
-    });
-  }, []);
 
   useEffect(() => {
     if (loaded && initialized) {
@@ -76,23 +66,14 @@ export default function RootLayout() {
     }
   }, [loaded, initialized]);
 
-  const setTheme = async (theme: 'light' | 'dark' | 'system') => {
-    setAppTheme(theme);
-    await AsyncStorage.setItem('app_theme', theme);
-  };
-
   if (!loaded || !initialized) {
     return null;
   }
 
-  const activeColorScheme = appTheme === 'system' ? systemColorScheme : (appTheme as 'light' | 'dark');
-
   return (
-    <ThemeContext.Provider value={{ colorScheme: activeColorScheme, setTheme }}>
-      <LocalizationProvider>
-        <RootLayoutNav colorScheme={activeColorScheme} />
-      </LocalizationProvider>
-    </ThemeContext.Provider>
+    <LocalizationProvider>
+      <RootLayoutNav colorScheme={colorScheme} />
+    </LocalizationProvider>
   );
 }
 
@@ -133,13 +114,15 @@ function RootLayoutNav({ colorScheme }: { colorScheme: 'light' | 'dark' }) {
     }
   }, [session, initialized, segments]);
 
+  const theme = Colors[colorScheme];
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <Stack screenOptions={{
-          headerStyle: { backgroundColor: colorScheme === 'dark' ? '#0D0D0F' : '#FFF' },
+          headerStyle: { backgroundColor: theme.background },
           headerTitleStyle: { fontFamily: 'Inter_700Bold', fontSize: 18 },
-          headerTintColor: colorScheme === 'dark' ? '#F0F0F5' : '#111111',
+          headerTintColor: theme.text,
           headerShadowVisible: false,
         }}>
           <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />

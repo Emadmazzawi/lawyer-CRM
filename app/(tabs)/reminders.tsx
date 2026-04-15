@@ -30,11 +30,11 @@ const ReminderItem = React.memo(({ item, index, theme, t, onComplete, onDelete }
       layout={Layout.springify()}
       style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border, borderLeftWidth: 4, borderLeftColor: getPriorityColor(item.priority || undefined) }]}
     >
-      <View style={[styles.iconContainer, { backgroundColor: '#F3E5F5' }]}>
+      <View style={[styles.iconContainer, { backgroundColor: theme.secondarySoft }]}>
         <FontAwesome 
           name="bell-o" 
           size={20} 
-          color="#7B1FA2" 
+          color={theme.secondary} 
         />
       </View>
       <View style={styles.cardContent}>

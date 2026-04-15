@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.semiBold,
     fontSize: 12,
     marginBottom: 6,
-    marginLeft: 2,
+    marginStart: 2,
   },
   webRow: {
     flexDirection: 'row',

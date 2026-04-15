@@ -1,5 +1,5 @@
-import { StyleSheet, FlatList, TouchableOpacity, View as RNView } from 'react-native';
-import { Text, View } from '@/components/Themed';
+import { StyleSheet, FlatList, TouchableOpacity, View as RNView, TextInput } from 'react-native';
+import { Text, View, Card } from '@/components/Themed';
 import React, { useEffect, useState, useCallback } from 'react';
 import { getClients, Client } from '@/src/api/clients';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -10,32 +10,36 @@ import Colors from '@/constants/Colors';
 import { Fonts, BorderRadius, Spacing } from '@/constants/Theme';
 import { FontAwesome } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { TextInput } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
 const getInitials = (name?: string) => {
   if (!name) return 'C';
   return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
 };
 
-const ClientListItem = React.memo(({ item, onPress, theme, t }: { item: Partial<Client>; onPress: (id: string) => void; theme: any; t: any }) => (
-  <TouchableOpacity 
-      style={[styles.item, { backgroundColor: theme.surface, borderColor: theme.border }]}
-      onPress={() => onPress(item.id!)}
-  >
-    <View style={styles.itemContent}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'transparent' }}>
-          <View style={[styles.avatar, { backgroundColor: theme.maroonSoft }]}>
-            <Text style={[styles.avatarText, { color: theme.maroon }]}>{getInitials(item.name)}</Text>
-          </View>
-          <Text style={[styles.title, { color: theme.text }]}>{item.name}</Text>
+const ClientListItem = React.memo(({ item, index, onPress, theme, t }: { item: Partial<Client>; index: number; onPress: (id: string) => void; theme: any; t: any }) => (
+  <Animated.View entering={FadeInDown.delay(index * 50).duration(500)}>
+    <TouchableOpacity 
+        onPress={() => onPress(item.id!)}
+        activeOpacity={0.7}
+    >
+      <Card style={[styles.item, { borderColor: theme.border }]}>
+        <View style={styles.itemContent}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'transparent' }}>
+              <View style={[styles.avatar, { backgroundColor: theme.maroonSoft }]}>
+                <Text style={[styles.avatarText, { color: theme.maroon }]}>{getInitials(item.name)}</Text>
+              </View>
+              <Text style={[styles.title, { color: theme.text }]}>{item.name}</Text>
+            </View>
+            <View style={[styles.statusBadge, { backgroundColor: theme.surfaceElevated, borderWidth: 1, borderColor: theme.border }]}>
+                <Text style={[styles.statusText, { color: theme.textSecondary }]}>
+                  {item.status ? t(`statuses.${item.status.replace(/\s+/g, '').replace(/^\w/, (c) => c.toLowerCase())}`) : ''}
+                </Text>
+            </View>
         </View>
-        <View style={[styles.statusBadge, { backgroundColor: theme.surfaceElevated, borderWidth: 1, borderColor: theme.border }]}>
-            <Text style={[styles.statusText, { color: theme.textSecondary }]}>
-              {item.status ? t(`statuses.${item.status.replace(/\s+/g, '').replace(/^\w/, (c) => c.toLowerCase())}`) : ''}
-            </Text>
-        </View>
-    </View>
-  </TouchableOpacity>
+      </Card>
+    </TouchableOpacity>
+  </Animated.View>
 ));
 
 export default function ClientsScreen() {
@@ -85,8 +89,8 @@ export default function ClientsScreen() {
     router.push(`/client/${id}`);
   }, [router]);
 
-  const renderItem = useCallback(({ item }: { item: Partial<Client> }) => (
-    <ClientListItem item={item} onPress={handlePress} theme={theme} t={t} />
+  const renderItem = useCallback(({ item, index }: { item: Partial<Client>; index: number }) => (
+    <ClientListItem item={item} index={index} onPress={handlePress} theme={theme} t={t} />
   ), [handlePress, theme, t]);
 
   const filteredClients = clients.filter(c => 
@@ -94,11 +98,14 @@ export default function ClientsScreen() {
   );
 
   const LoadingSkeleton = () => (
-    <RNView style={{ padding: 10 }}>
+    <RNView style={{ paddingHorizontal: Spacing.lg }}>
         {[1, 2, 3, 4, 5, 6].map(i => (
             <RNView key={i} style={styles.skeletonItem}>
-                <Skeleton width="50%" height={20} style={{ marginBottom: 10 }} />
-                <Skeleton width="30%" height={15} />
+                <Skeleton width={48} height={48} borderRadius={24} style={{ marginEnd: 15 }} />
+                <View style={{ flex: 1, backgroundColor: 'transparent' }}>
+                  <Skeleton width="60%" height={18} style={{ marginBottom: 8 }} />
+                  <Skeleton width="30%" height={12} />
+                </View>
             </RNView>
         ))}
     </RNView>
@@ -109,7 +116,7 @@ export default function ClientsScreen() {
       <View style={styles.header}>
         <Text style={[styles.headerTitle, { color: theme.text }]}>{t('clients.title')}</Text>
         <TouchableOpacity 
-          style={[styles.addButton, { backgroundColor: theme.maroon, shadowColor: theme.maroon }]}
+          style={[styles.addButton, { backgroundColor: theme.maroon }]}
           onPress={() => router.push('/create-client')}
         >
           <FontAwesome name="plus" size={18} color="#FFF" />
@@ -147,7 +154,7 @@ export default function ClientsScreen() {
           contentContainerStyle={styles.listContent}
           onEndReached={loadMore}
           onEndReachedThreshold={0.5}
-          ListFooterComponent={isFetchingMore ? <Skeleton width="90%" height={60} style={{ alignSelf: 'center', marginVertical: 10 }} /> : null}
+          ListFooterComponent={isFetchingMore ? <Skeleton width="100%" height={60} style={{ marginVertical: 10 }} /> : null}
         />
       )}
     </View>
@@ -163,7 +170,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.md,
+    paddingTop: Spacing.xl,
     marginBottom: Spacing.md,
     backgroundColor: 'transparent',
   },
@@ -210,14 +217,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   listContent: {
-    paddingHorizontal: Spacing.md,
+    paddingHorizontal: Spacing.lg,
     paddingBottom: 40,
   },
   item: {
     padding: Spacing.md,
-    marginVertical: 4,
-    marginHorizontal: Spacing.xs,
-    borderRadius: BorderRadius.lg,
+    marginBottom: Spacing.md,
     borderWidth: 1,
   },
   itemContent: {
@@ -227,16 +232,16 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
     marginEnd: Spacing.sm,
   },
   avatarText: {
     fontFamily: Fonts.bold,
-    fontSize: 13,
+    fontSize: 14,
   },
   title: {
     fontFamily: Fonts.bold,
@@ -253,9 +258,9 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   skeletonItem: {
-    padding: Spacing.lg,
-    marginVertical: 6,
-    marginHorizontal: 10,
-    borderRadius: BorderRadius.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Spacing.md,
+    backgroundColor: 'transparent',
   }
 });

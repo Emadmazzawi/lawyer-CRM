@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useMemo } from 'react';
-import { StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, Alert, Text, View, Animated, ScrollView, Platform } from 'react-native';
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import { StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, Alert, ScrollView, View as RNView, Platform } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -20,14 +20,19 @@ import {
 } from '@/src/api/routines';
 import { Fonts, BorderRadius, Spacing } from '@/constants/Theme';
 import { format, eachDayOfInterval, isSameDay, subDays, addDays, isToday, isFuture, startOfDay } from 'date-fns';
+import { View, Text } from '@/components/Themed';
+import { Skeleton } from '@/components/Skeleton';
+import { RoutineCard } from '@/components/RoutineCard';
+import * as Haptics from 'expo-haptics';
 
 const DAY_MAP: Record<number, string> = { 0: 'Sun', 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat' };
 
 export default function RoutinesScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? 'light'];
   const router = useRouter();
+  const isRTL = i18n.dir() === 'rtl';
 
   const [routines, setRoutines] = useState<Routine[]>([]);
   const [completions, setCompletions] = useState<RoutineCompletion[]>([]);
@@ -36,31 +41,47 @@ export default function RoutinesScreen() {
   const [tab, setTab] = useState<'scheduled' | 'flexible'>('scheduled');
   
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const scrollRef = useRef<ScrollView>(null);
+
   const calendarDays = useMemo(() => {
     return eachDayOfInterval({
       start: subDays(new Date(), 14),
-      end: addDays(new Date(), 7),
+      end: addDays(new Date(), 14),
     });
   }, []);
 
   const todayKey = DAY_MAP[selectedDate.getDay()];
-  const selectedDateLabel = format(selectedDate, 'EEEE, MMM do');
   const selectedDateString = format(selectedDate, 'yyyy-MM-dd');
 
   const loadData = async () => {
-    setLoading(true);
-    const startDate = format(calendarDays[0], 'yyyy-MM-dd');
-    const endDate = format(calendarDays[calendarDays.length - 1], 'yyyy-MM-dd');
-    
-    const [routineRes, completionRes, stepCompletionRes] = await Promise.all([
-      fetchRoutines(),
-      fetchCompletionsForRange(startDate, endDate),
-      fetchStepCompletionsForRange(startDate, endDate),
-    ]);
-    if (routineRes.data) setRoutines(routineRes.data);
-    if (completionRes.data) setCompletions(completionRes.data);
-    if (stepCompletionRes.data) setStepCompletions(stepCompletionRes.data);
-    setLoading(false);
+    try {
+      setLoading(true);
+      console.log('--- [Debug] loadData starting...');
+      const startDate = format(calendarDays[0], 'yyyy-MM-dd');
+      const endDate = format(calendarDays[calendarDays.length - 1], 'yyyy-MM-dd');
+      
+      const [routineRes, completionRes, stepCompletionRes] = await Promise.all([
+        fetchRoutines(),
+        fetchCompletionsForRange(startDate, endDate),
+        fetchStepCompletionsForRange(startDate, endDate),
+      ]);
+
+      if (routineRes.error) throw routineRes.error;
+      console.log('--- [Debug] Routines loaded:', routineRes.data?.length);
+      
+      if (routineRes.data) setRoutines(routineRes.data);
+      if (completionRes.data) setCompletions(completionRes.data);
+      if (stepCompletionRes.data) setStepCompletions(stepCompletionRes.data);
+    } catch (error: any) {
+      console.error('--- [Debug] loadData error:', error);
+      if (Platform.OS === 'web') {
+        window.alert(error.message || 'Failed to load routines');
+      } else {
+        Alert.alert(t('common.error'), error.message || 'Failed to load routines');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   useFocusEffect(
@@ -69,35 +90,111 @@ export default function RoutinesScreen() {
     }, [selectedDate])
   );
 
-  const handleDeleteRoutine = (id: string) => {
-    const performDelete = async () => {
-      setLoading(true);
-      const { error } = await deleteRoutine(id);
-      if (error) Alert.alert(t('common.error'), error.message);
-      else await loadData();
-    };
+  // Center calendar on today or selected date
+  useEffect(() => {
+    if (scrollRef.current) {
+      const index = calendarDays.findIndex(d => isSameDay(d, selectedDate));
+      if (index !== -1) {
+        // Approximate width of a calendar day (54) + gap (10)
+        const offset = index * 64 - 150; 
+        scrollRef.current.scrollTo({ x: offset, animated: true });
+      }
+    }
+  }, [selectedDate, calendarDays]);
 
-    Alert.alert(t('routines.deleteRoutine'), t('routines.deleteConfirm'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('common.delete'), style: 'destructive', onPress: performDelete }
-    ]);
+  const handleGoToToday = () => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+    setSelectedDate(new Date());
   };
 
-  const handleDeleteStep = (stepId: string) => {
+  const handleDeleteRoutine = useCallback((id: string) => {
     const performDelete = async () => {
-      const { error } = await deleteStep(stepId);
-      if (error) Alert.alert(t('common.error'), error.message);
-      else await loadData();
+      try {
+        setLoading(true);
+        console.log('--- [Debug] Attempting to delete routine:', id);
+        const { error, status } = await deleteRoutine(id);
+        
+        if (error) {
+          console.error('--- [Debug] Delete Routine Error:', error);
+          if (Platform.OS === 'web') {
+            window.alert(`Delete failed: ${error.message}`);
+          } else {
+            Alert.alert(t('common.error'), `Delete failed: ${error.message}`);
+          }
+        } else {
+          console.log('--- [Debug] Delete Routine Success. Status:', status);
+          // Refresh data immediately
+          await loadData();
+        }
+      } catch (e: any) {
+        console.error('--- [Debug] Catch block error:', e);
+        if (Platform.OS === 'web') {
+          window.alert(e.message || 'An unexpected error occurred');
+        } else {
+          Alert.alert(t('common.error'), e.message || 'An unexpected error occurred');
+        }
+      } finally {
+        setLoading(false);
+      }
     };
 
-    Alert.alert('Delete Step', 'Are you sure you want to delete this step?', [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('common.delete'), style: 'destructive', onPress: performDelete }
-    ]);
-  };
+    if (Platform.OS === 'web') {
+      if (window.confirm(t('routines.deleteConfirm'))) {
+        performDelete();
+      }
+    } else {
+      Alert.alert(t('routines.deleteRoutine'), t('routines.deleteConfirm'), [
+        { text: t('common.cancel'), style: 'cancel' },
+        { text: t('common.delete'), style: 'destructive', onPress: performDelete }
+      ]);
+    }
+  }, [t, loadData]);
 
-  const isRoutineDone = (id: string) => completions.some(c => c.routine_id === id && c.date_string === selectedDateString);
-  const isStepDone = (id: string) => stepCompletions.some(c => c.step_id === id && c.date_string === selectedDateString);
+  const handleDeleteStep = useCallback((stepId: string) => {
+    const performDelete = async () => {
+      try {
+        const { error } = await deleteStep(stepId);
+        if (error) {
+          if (Platform.OS === 'web') {
+            window.alert(error.message);
+          } else {
+            Alert.alert(t('common.error'), error.message);
+          }
+        } else {
+          await loadData();
+        }
+      } catch (e: any) {
+        if (Platform.OS === 'web') {
+          window.alert(e.message || 'Failed to delete step');
+        } else {
+          Alert.alert(t('common.error'), e.message || 'Failed to delete step');
+        }
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      if (window.confirm('Are you sure you want to delete this step?')) {
+        performDelete();
+      }
+    } else {
+      Alert.alert('Delete Step', 'Are you sure you want to delete this step?', [
+        { text: t('common.cancel'), style: 'cancel' },
+        { text: t('common.delete'), style: 'destructive', onPress: performDelete }
+      ]);
+    }
+  }, [t, loadData]);
+
+  const isRoutineDone = useCallback((id: string) => 
+    completions.some(c => c.routine_id === id && c.date_string === selectedDateString),
+    [completions, selectedDateString]
+  );
+  
+  const isStepDone = useCallback((id: string) => 
+    stepCompletions.some(c => c.step_id === id && c.date_string === selectedDateString),
+    [stepCompletions, selectedDateString]
+  );
 
   const handleToggleRoutine = async (routine: Routine) => {
     if (isFuture(startOfDay(selectedDate)) && !isToday(selectedDate)) return;
@@ -105,35 +202,48 @@ export default function RoutinesScreen() {
     const currentDone = isRoutineDone(routine.id);
     const targetStatus = !currentDone;
 
-    // 1. Toggle Routine Status
+    // Optimistic UI Update
+    const previousCompletions = [...completions];
+    const previousStepCompletions = [...stepCompletions];
+
+    if (targetStatus) {
+      setCompletions(prev => [...prev, { id: 'temp-'+Date.now(), routine_id: routine.id, user_id: '', date_string: selectedDateString, completed_at: '' }]);
+      if (routine.steps) {
+        const newStepComps = routine.steps.map(s => ({ id: 'temp-'+s.id, step_id: s.id, user_id: '', date_string: selectedDateString, completed_at: '' }));
+        setStepCompletions(prev => [...prev, ...newStepComps]);
+      }
+    } else {
+      setCompletions(prev => prev.filter(c => !(c.routine_id === routine.id && c.date_string === selectedDateString)));
+      if (routine.steps) {
+        const stepIds = routine.steps.map(s => s.id);
+        setStepCompletions(prev => prev.filter(c => !(c.date_string === selectedDateString && stepIds.includes(c.step_id))));
+      }
+    }
+
     const { completed, error } = await toggleRoutineCompletion(routine.id, selectedDateString, targetStatus);
     
-    if (!error) {
-      // 2. Sync UI state for routine
-      if (completed) {
-        setCompletions(prev => [...prev, { id: 'temp-'+Date.now(), routine_id: routine.id, user_id: '', date_string: selectedDateString, completed_at: '' }]);
+    if (error) {
+      if (Platform.OS === 'web') {
+        window.alert(error.message);
       } else {
-        setCompletions(prev => prev.filter(c => !(c.routine_id === routine.id && c.date_string === selectedDateString)));
+        Alert.alert(t('common.error'), error.message);
       }
+      setCompletions(previousCompletions);
+      setStepCompletions(previousStepCompletions);
+      return;
+    }
 
-      // 3. Batch Update Steps
-      if (routine.steps && routine.steps.length > 0) {
-        const stepIds = routine.steps.map(s => s.id);
-        const { error: batchError } = await batchSetStepCompletion(stepIds, selectedDateString, completed);
-        
-        if (!batchError) {
-          // Sync UI state for steps
-          if (completed) {
-            const newComps = stepIds.map(sid => ({ id: 'temp-'+sid, step_id: sid, user_id: '', date_string: selectedDateString, completed_at: '' }));
-            // Avoid duplicates
-            setStepCompletions(prev => {
-              const otherDateComps = prev.filter(c => c.date_string !== selectedDateString || !stepIds.includes(c.step_id));
-              return [...otherDateComps, ...newComps];
-            });
-          } else {
-            setStepCompletions(prev => prev.filter(c => !(c.date_string === selectedDateString && stepIds.includes(c.step_id))));
-          }
+    if (routine.steps && routine.steps.length > 0) {
+      const stepIds = routine.steps.map(s => s.id);
+      const { error: batchError } = await batchSetStepCompletion(stepIds, selectedDateString, completed);
+      if (batchError) {
+        // Rollback is tricky here but let's at least notify
+        if (Platform.OS === 'web') {
+          window.alert('Failed to update some steps');
+        } else {
+          Alert.alert(t('common.error'), 'Failed to update some steps');
         }
+        loadData();
       }
     }
   };
@@ -141,49 +251,91 @@ export default function RoutinesScreen() {
   const handleToggleStep = async (routineId: string, stepId: string) => {
     if (isFuture(startOfDay(selectedDate)) && !isToday(selectedDate)) return;
     
+    const currentDone = isStepDone(stepId);
+    const targetStatus = !currentDone;
+
+    // Optimistic Update
+    const previousStepCompletions = [...stepCompletions];
+    const previousCompletions = [...completions];
+
+    let updatedSteps: StepCompletion[] = [];
+    if (targetStatus) {
+      updatedSteps = [...stepCompletions, { id: 'temp-'+Date.now(), step_id: stepId, user_id: '', date_string: selectedDateString, completed_at: '' }];
+    } else {
+      updatedSteps = stepCompletions.filter(c => !(c.step_id === stepId && c.date_string === selectedDateString));
+    }
+    setStepCompletions(updatedSteps);
+
+    // Check if we need to toggle the parent routine optimistically
+    const routine = routines.find(r => r.id === routineId);
+    if (routine && routine.steps) {
+      const allStepsDone = routine.steps.every(s => 
+        updatedSteps.some(sc => sc.step_id === s.id && sc.date_string === selectedDateString)
+      );
+      const parentDone = isRoutineDone(routineId);
+
+      if (allStepsDone && !parentDone) {
+        setCompletions(prev => [...prev, { id: 'temp-r-'+Date.now(), routine_id: routineId, user_id: '', date_string: selectedDateString, completed_at: '' }]);
+      } else if (!allStepsDone && parentDone) {
+        setCompletions(prev => prev.filter(c => !(c.routine_id === routineId && c.date_string === selectedDateString)));
+      }
+    }
+
     const { completed, error } = await toggleStepCompletion(stepId, selectedDateString);
     
-    if (!error) {
-      // 1. Update step UI
-      let updatedSteps: StepCompletion[] = [];
-      if (completed) {
-        updatedSteps = [...stepCompletions, { id: 'temp-'+Date.now(), step_id: stepId, user_id: '', date_string: selectedDateString, completed_at: '' }];
+    if (error) {
+      if (Platform.OS === 'web') {
+        window.alert(error.message);
       } else {
-        updatedSteps = stepCompletions.filter(c => !(c.step_id === stepId && c.date_string === selectedDateString));
+        Alert.alert(t('common.error'), error.message);
       }
-      setStepCompletions(updatedSteps);
+      setStepCompletions(previousStepCompletions);
+      setCompletions(previousCompletions);
+      return;
+    }
 
-      // 2. Recalculate Parent Routine
-      const routine = routines.find(r => r.id === routineId);
-      if (routine && routine.steps) {
-        const allStepsDone = routine.steps.every(s => 
-          updatedSteps.some(sc => sc.step_id === s.id && sc.date_string === selectedDateString)
-        );
-        const parentDone = isRoutineDone(routineId);
+    // Sync parent routine on backend if needed
+    if (routine && routine.steps) {
+      const allStepsDone = routine.steps.every(s => 
+        (s.id === stepId ? completed : isStepDone(s.id))
+      );
+      const parentDone = isRoutineDone(routineId);
 
-        if (allStepsDone && !parentDone) {
-          // Auto-check parent
-          const { error: rError } = await toggleRoutineCompletion(routineId, selectedDateString, true);
-          if (!rError) setCompletions(prev => [...prev, { id: 'temp-r-'+Date.now(), routine_id: routineId, user_id: '', date_string: selectedDateString, completed_at: '' }]);
-        } else if (!allStepsDone && parentDone) {
-          // Auto-uncheck parent
-          const { error: rError } = await toggleRoutineCompletion(routineId, selectedDateString, false);
-          if (!rError) setCompletions(prev => prev.filter(c => !(c.routine_id === routineId && c.date_string === selectedDateString)));
+      if (allStepsDone !== parentDone) {
+        const { error: rError } = await toggleRoutineCompletion(routineId, selectedDateString, allStepsDone);
+        if (rError) {
+           // Silently fail or reload
+           loadData();
         }
       }
     }
   };
 
-  const filteredRoutines = routines.filter(r => {
-    const matchType = r.schedule_type === tab || (!r.schedule_type && tab === 'scheduled');
-    if (!isToday(selectedDate) && r.schedule_type === 'flexible') return isRoutineDone(r.id);
-    const matchDay = tab === 'flexible' || !r.active_days || (Array.isArray(r.active_days) && r.active_days.includes(todayKey));
-    return matchType && matchDay;
-  });
+  const filteredRoutines = useMemo(() => {
+    return routines.filter(r => {
+      const matchType = r.schedule_type === tab || (!r.schedule_type && tab === 'scheduled');
+      if (!isToday(selectedDate) && r.schedule_type === 'flexible') return isRoutineDone(r.id);
+      const matchDay = tab === 'flexible' || !r.active_days || (Array.isArray(r.active_days) && r.active_days.includes(todayKey));
+      return matchType && matchDay;
+    });
+  }, [routines, tab, selectedDate, todayKey, isRoutineDone]);
 
   const renderCalendar = () => (
     <View style={styles.calendarContainer}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.calendarScroll}>
+      <View style={styles.calendarHeader}>
+        <Text style={[styles.calendarMonth, { color: theme.textSecondary }]}>
+          {format(selectedDate, 'MMMM yyyy')}
+        </Text>
+        <TouchableOpacity onPress={handleGoToToday} style={[styles.todayBtn, { backgroundColor: theme.maroonSoft }]}>
+          <Text style={[styles.todayBtnText, { color: theme.maroon }]}>{t('common.today') || 'Today'}</Text>
+        </TouchableOpacity>
+      </View>
+      <ScrollView 
+        ref={scrollRef}
+        horizontal 
+        showsHorizontalScrollIndicator={false} 
+        contentContainerStyle={styles.calendarScroll}
+      >
         {calendarDays.map((day, index) => {
           const isSel = isSameDay(day, selectedDate);
           const isTod = isToday(day);
@@ -192,14 +344,20 @@ export default function RoutinesScreen() {
               key={index}
               style={[
                 styles.calendarDay,
-                { backgroundColor: theme.surfaceElevated },
-                isSel && { backgroundColor: theme.maroon, borderColor: theme.maroon },
-                isTod && !isSel && { borderColor: theme.maroon, borderWidth: 1 }
+                { backgroundColor: theme.surfaceElevated, borderColor: theme.border, borderWidth: 1 },
+                isSel && { backgroundColor: theme.maroon, borderColor: theme.maroon, transform: [{ scale: 1.05 }] },
+                isTod && !isSel && { borderColor: theme.maroon }
               ]}
-              onPress={() => setSelectedDate(day)}
+              onPress={() => {
+                if (Platform.OS !== 'web') {
+                  Haptics.selectionAsync();
+                }
+                setSelectedDate(day);
+              }}
             >
               <Text style={[styles.calendarDayName, { color: theme.textSecondary }, isSel && { color: '#FFF' }]}>{format(day, 'EEE')}</Text>
               <Text style={[styles.calendarDayNum, { color: theme.text }, isSel && { color: '#FFF' }]}>{format(day, 'd')}</Text>
+              {isTod && !isSel && <View style={[styles.todayIndicator, { backgroundColor: theme.maroon }]} />}
             </TouchableOpacity>
           );
         })}
@@ -207,88 +365,78 @@ export default function RoutinesScreen() {
     </View>
   );
 
-  const renderRoutineItem = ({ item }: { item: Routine }) => {
-    const done = isRoutineDone(item.id);
-    const isPast = !isToday(selectedDate) && !isFuture(selectedDate);
-
-    return (
-      <View style={[styles.routineCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-        <View style={styles.routineHeader}>
-          <TouchableOpacity 
-            style={styles.routineTitleArea} 
-            onPress={() => handleToggleRoutine(item)}
-            activeOpacity={0.7}
-          >
-            <View style={[styles.checkCircle, done && { backgroundColor: theme.maroon, borderColor: theme.maroon }]}>
-              {done && <FontAwesome name="check" size={10} color="#FFF" />}
-            </View>
-            <Text style={[styles.routineTitle, { color: theme.text }, done && styles.doneText]}>{item.title}</Text>
-          </TouchableOpacity>
-          <View style={styles.headerActions}>
-            <TouchableOpacity onPress={() => router.push(`/run-routine/${item.id}`)} style={styles.actionBtn}>
-              <FontAwesome name="play" size={14} color={theme.maroon} />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => handleDeleteRoutine(item.id)} style={styles.actionBtn}>
-              <FontAwesome name="trash-o" size={16} color={theme.textMuted} />
-            </TouchableOpacity>
-          </View>
+  const LoadingSkeleton = () => (
+    <RNView style={{ paddingHorizontal: Spacing.lg }}>
+      {[1, 2, 3].map(i => (
+        <View key={i} style={[styles.routineCardSkeleton, { borderColor: theme.border, padding: Spacing.md }]}>
+          <RNView style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15, backgroundColor: 'transparent' }}>
+            <Skeleton width={24} height={24} borderRadius={12} style={{ marginEnd: 15 }} />
+            <Skeleton width="60%" height={20} />
+          </RNView>
+          <Skeleton width="100%" height={40} borderRadius={8} style={{ marginBottom: 8 }} />
+          <Skeleton width="100%" height={40} borderRadius={8} />
         </View>
-
-        {item.steps && item.steps.length > 0 && (
-          <View style={styles.stepsContainer}>
-            {item.steps.map(step => {
-              const sDone = isStepDone(step.id);
-              return (
-                <View key={step.id} style={[styles.stepRow, { borderTopColor: theme.border }]}>
-                  <TouchableOpacity 
-                    style={styles.stepTitleArea}
-                    onPress={() => handleToggleStep(item.id, step.id)}
-                    activeOpacity={0.7}
-                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                  >
-                    <View style={[styles.stepCheck, sDone && { backgroundColor: theme.maroon, borderColor: theme.maroon }]}>
-                      {sDone && <FontAwesome name="check" size={8} color="#FFF" />}
-                    </View>
-                    <Text style={styles.stepEmoji}>{step.emoji || '✨'}</Text>
-                    <Text style={[styles.stepTitle, { color: theme.textSecondary }, sDone && styles.doneText]}>{step.title}</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => handleDeleteStep(step.id)} style={styles.stepDelete} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                    <FontAwesome name="times" size={14} color={theme.textMuted} />
-                  </TouchableOpacity>
-                </View>
-              );
-            })}
-          </View>
-        )}
-      </View>
-    );
-  };
+      ))}
+    </RNView>
+  );
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.header}>
         <Text style={[styles.headerTitle, { color: theme.text }]}>{t('routines.title')}</Text>
-        <TouchableOpacity onPress={() => router.push('/create-routine')}><FontAwesome name="plus" size={22} color={theme.text} /></TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.addButton, { backgroundColor: theme.maroon }]}
+          onPress={() => router.push('/create-routine')}
+        >
+          <FontAwesome name="plus" size={18} color="#FFF" />
+        </TouchableOpacity>
       </View>
 
       {renderCalendar()}
 
       <View style={[styles.tabRow, { backgroundColor: theme.surfaceElevated }]}>
-        <TouchableOpacity style={[styles.tabBtn, tab === 'scheduled' && styles.tabBtnActive]} onPress={() => setTab('scheduled')}>
-          <Text style={[styles.tabText, tab === 'scheduled' && styles.tabTextActive]}>{t('routines.scheduled')}</Text>
+        <TouchableOpacity 
+          style={[styles.tabBtn, tab === 'scheduled' && { backgroundColor: theme.surface }]} 
+          onPress={() => {
+             if (Platform.OS !== 'web') {
+               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+             }
+             setTab('scheduled');
+          }}
+        >
+          <Text style={[styles.tabText, { color: theme.textSecondary }, tab === 'scheduled' && { color: theme.text }]}>{t('routines.scheduled')}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.tabBtn, tab === 'flexible' && styles.tabBtnActive]} onPress={() => setTab('flexible')}>
-          <Text style={[styles.tabText, tab === 'flexible' && styles.tabTextActive]}>{t('routines.flexible')}</Text>
+        <TouchableOpacity 
+          style={[styles.tabBtn, tab === 'flexible' && { backgroundColor: theme.surface }]} 
+          onPress={() => {
+             if (Platform.OS !== 'web') {
+               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+             }
+             setTab('flexible');
+          }}
+        >
+          <Text style={[styles.tabText, { color: theme.textSecondary }, tab === 'flexible' && { color: theme.text }]}>{t('routines.flexible')}</Text>
         </TouchableOpacity>
       </View>
 
       {loading ? (
-        <ActivityIndicator size="large" color={theme.maroon} style={{ marginTop: 50 }} />
+        <LoadingSkeleton />
       ) : (
         <FlatList
           data={filteredRoutines}
           keyExtractor={item => item.id}
-          renderItem={renderRoutineItem}
+          renderItem={({ item, index }) => (
+            <RoutineCard 
+              routine={item}
+              index={index}
+              isDone={isRoutineDone}
+              isStepDone={isStepDone}
+              onToggleRoutine={handleToggleRoutine}
+              onToggleStep={handleToggleStep}
+              onDeleteRoutine={handleDeleteRoutine}
+              onDeleteStep={handleDeleteStep}
+            />
+          )}
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={<Text style={[styles.emptyText, { color: theme.textMuted }]}>{t('routines.noRoutines', { tab: t(`routines.${tab}`) })}</Text>}
         />
@@ -299,33 +447,65 @@ export default function RoutinesScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: Spacing.lg },
+  header: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.xl,
+    paddingBottom: Spacing.md,
+    backgroundColor: 'transparent',
+  },
   headerTitle: { fontFamily: Fonts.black, fontSize: 32 },
-  calendarContainer: { marginBottom: Spacing.md },
-  calendarScroll: { paddingHorizontal: Spacing.lg, gap: 10 },
-  calendarDay: { width: 50, height: 70, borderRadius: 15, justifyContent: 'center', alignItems: 'center' },
+  addButton: {
+    width: 44,
+    height: 44,
+    borderRadius: BorderRadius.pill,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  calendarContainer: { marginBottom: Spacing.md, backgroundColor: 'transparent' },
+  calendarHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.lg,
+    marginBottom: Spacing.sm,
+    backgroundColor: 'transparent',
+  },
+  calendarMonth: {
+    fontSize: 14,
+    fontFamily: Fonts.bold,
+    textTransform: 'capitalize',
+  },
+  todayBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  todayBtnText: {
+    fontSize: 12,
+    fontFamily: Fonts.bold,
+  },
+  calendarScroll: { paddingHorizontal: Spacing.lg, gap: 10, paddingVertical: 5 },
+  calendarDay: { width: 54, height: 74, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
   calendarDayName: { fontSize: 10, fontFamily: Fonts.bold, textTransform: 'uppercase' },
-  calendarDayNum: { fontSize: 16, fontFamily: Fonts.bold },
-  tabRow: { flexDirection: 'row', marginHorizontal: Spacing.lg, borderRadius: 12, padding: 4, marginBottom: Spacing.md },
-  tabBtn: { flex: 1, paddingVertical: 8, borderRadius: 10, alignItems: 'center' },
-  tabBtnActive: { backgroundColor: '#FFF' },
-  tabText: { fontSize: 14, fontFamily: Fonts.semiBold, color: '#666' },
-  tabTextActive: { color: '#000' },
+  calendarDayNum: { fontSize: 18, fontFamily: Fonts.bold, marginTop: 4 },
+  todayIndicator: {
+    position: 'absolute',
+    bottom: 8,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+  },
+  tabRow: { flexDirection: 'row', marginHorizontal: Spacing.lg, borderRadius: 16, padding: 4, marginBottom: Spacing.md },
+  tabBtn: { flex: 1, paddingVertical: 10, borderRadius: 12, alignItems: 'center' },
+  tabText: { fontSize: 14, fontFamily: Fonts.bold },
   listContent: { paddingHorizontal: Spacing.lg, paddingBottom: 100 },
-  routineCard: { borderRadius: 20, borderWidth: 1, marginBottom: Spacing.md, overflow: 'hidden' },
-  routineHeader: { flexDirection: 'row', alignItems: 'center', padding: Spacing.md },
-  routineTitleArea: { flexDirection: 'row', alignItems: 'center', flex: 1 },
-  checkCircle: { width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: '#DDD', marginRight: 12, justifyContent: 'center', alignItems: 'center' },
-  routineTitle: { fontSize: 18, fontFamily: Fonts.bold },
-  headerActions: { flexDirection: 'row', gap: 15 },
-  actionBtn: { padding: 5 },
-  stepsContainer: { paddingBottom: 10 },
-  stepRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, paddingHorizontal: Spacing.md, borderTopWidth: 1 },
-  stepTitleArea: { flexDirection: 'row', alignItems: 'center', flex: 1 },
-  stepCheck: { width: 16, height: 16, borderRadius: 8, borderWidth: 1.5, borderColor: '#EEE', marginRight: 10, justifyContent: 'center', alignItems: 'center' },
-  stepEmoji: { fontSize: 16, marginRight: 8 },
-  stepTitle: { fontSize: 14, fontFamily: Fonts.medium },
-  stepDelete: { padding: 5 },
-  doneText: { textDecorationLine: 'line-through', opacity: 0.5 },
-  emptyText: { textAlign: 'center', marginTop: 40, fontFamily: Fonts.medium }
+  routineCardSkeleton: { borderRadius: 24, borderWidth: 1, marginBottom: Spacing.md, backgroundColor: 'transparent' },
+  emptyText: { textAlign: 'center', marginTop: 40, fontFamily: Fonts.medium },
 });

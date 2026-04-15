@@ -1,15 +1,17 @@
 import { StyleSheet, FlatList, Dimensions, Pressable, ScrollView, TouchableOpacity } from 'react-native';
-import { Text, View } from '@/components/Themed';
+import { Text, View, Card } from '@/components/Themed';
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { getEventsTasks, EventTask, deleteEventTask, updateEventTask } from '@/src/api/events_and_tasks';
 import { getCurrentUser } from '@/src/api/auth';
 import { getProfile, Profile } from '@/src/api/profiles';
+import { getDashboardStats, DashboardStats } from '@/src/api/stats';
 import Animated, { FadeInDown, FadeInRight, Layout, FadeIn } from 'react-native-reanimated';
 import { FontAwesome } from '@expo/vector-icons';
 import { format, differenceInDays } from 'date-fns';
 import { Skeleton } from '@/components/Skeleton';
 import { EmptyState } from '@/components/EmptyState';
 import { useColorScheme } from '@/components/useColorScheme';
+import { SummaryWidget } from '@/components/SummaryWidget';
 import Colors from '@/constants/Colors';
 import { Fonts, BorderRadius, Spacing } from '@/constants/Theme';
 import { useTranslation } from 'react-i18next';
@@ -22,28 +24,29 @@ const EventItem = React.memo(({ item, index, formatDate, onDelete, onComplete, t
   <Animated.View 
     entering={FadeInDown.delay(index * 50).duration(500)}
     layout={Layout.springify()}
-    style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
   >
-    <View style={[styles.iconContainer, { backgroundColor: item.type === 'calendar_event' ? theme.maroonSoft : '#F3E5F5' }]}>
-      <FontAwesome 
-        name={item.type === 'calendar_event' ? 'calendar' : 'clock-o'} 
-        size={20} 
-        color={item.type === 'calendar_event' ? theme.maroon : '#7B1FA2'} 
-      />
-    </View>
-    <View style={styles.cardContent}>
-      <Text style={[styles.title, { color: theme.text }]} numberOfLines={1}>{item.title}</Text>
-      <Text style={[styles.subtitle, { color: theme.textMuted }]}>{formatDate(item.due_date ?? null)}</Text>
-    </View>
-    
-    <View style={styles.actionGroup}>
-      <TouchableOpacity onPress={() => onComplete(item.id!)} style={styles.actionButton}>
-        <FontAwesome name="check-circle-o" size={24} color={theme.success} />
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => onDelete(item.id!)} style={[styles.actionButton, { marginStart: Spacing.md }]}>
-        <FontAwesome name="trash-o" size={22} color={theme.danger} />
-      </TouchableOpacity>
-    </View>
+    <Card style={[styles.card, { borderColor: theme.border }]}>
+      <View style={[styles.iconContainer, { backgroundColor: item.type === 'calendar_event' ? theme.maroonSoft : theme.secondarySoft }]}>
+        <FontAwesome 
+          name={item.type === 'calendar_event' ? 'calendar' : 'clock-o'} 
+          size={20} 
+          color={item.type === 'calendar_event' ? theme.maroon : theme.secondary} 
+        />
+      </View>
+      <View style={styles.cardContent}>
+        <Text style={[styles.title, { color: theme.text }]} numberOfLines={1}>{item.title}</Text>
+        <Text style={[styles.subtitle, { color: theme.textSecondary }]}>{formatDate(item.due_date ?? null)}</Text>
+      </View>
+      
+      <View style={styles.actionGroup}>
+        <TouchableOpacity onPress={() => onComplete(item.id!)} style={styles.actionButton}>
+          <FontAwesome name="check-circle-o" size={24} color={theme.success} />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => onDelete(item.id!)} style={[styles.actionButton, { marginStart: Spacing.md }]}>
+          <FontAwesome name="trash-o" size={22} color={theme.danger} />
+        </TouchableOpacity>
+      </View>
+    </Card>
   </Animated.View>
 ));
 
@@ -57,34 +60,35 @@ const CountdownItem = React.memo(({ item, index, formatDate, onDelete, onComplet
   return (
     <Animated.View 
       entering={FadeInRight.delay(index * 75).duration(600)}
-      style={[styles.countdownCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
     >
-      <View style={styles.countdownHeader}>
-        <Text style={[styles.countdownTitle, { color: theme.text }]} numberOfLines={1}>{item.title}</Text>
-        <TouchableOpacity onPress={() => onDelete(item.id!)}>
-           <FontAwesome name="times-circle" size={18} color={theme.textMuted} />
-        </TouchableOpacity>
-      </View>
-      
-      <View style={styles.countdownBody}>
-        {daysLeft !== null && (
-          <View style={[styles.daysBadge, { backgroundColor: daysLeft <= 3 ? theme.accentSoft : theme.maroonSoft }]}>
-            <Text style={[styles.daysText, { color: daysLeft <= 3 ? theme.danger : theme.maroon }]}>
-              {daysLeft < 0 ? t('dashboard.overdue') : t('dashboard.daysLeft', { days: daysLeft })}
-            </Text>
-          </View>
-        )}
-      </View>
-
-      <View style={styles.countdownFooter}>
-        <View style={styles.countdownDateGroup}>
-          <FontAwesome name="calendar-o" size={12} color={theme.textSecondary} />
-          <Text style={[styles.countdownDate, { color: theme.textMuted }]}>{formatDate(item.due_date ?? null)}</Text>
+      <Card style={[styles.countdownCard, { borderColor: theme.border }]}>
+        <View style={styles.countdownHeader}>
+          <Text style={[styles.countdownTitle, { color: theme.text }]} numberOfLines={1}>{item.title}</Text>
+          <TouchableOpacity onPress={() => onDelete(item.id!)}>
+            <FontAwesome name="times-circle" size={18} color={theme.textMuted} />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={() => onComplete(item.id!)}>
-          <FontAwesome name="check-circle" size={24} color={theme.success} />
-        </TouchableOpacity>
-      </View>
+        
+        <View style={styles.countdownBody}>
+          {daysLeft !== null && (
+            <View style={[styles.daysBadge, { backgroundColor: daysLeft <= 3 ? theme.dangerSoft : theme.maroonSoft, alignSelf: 'flex-start' }]}>
+              <Text style={[styles.daysText, { color: daysLeft <= 3 ? theme.danger : theme.maroon }]}>
+                {daysLeft < 0 ? t('dashboard.overdue') : t('dashboard.daysLeft', { days: daysLeft })}
+              </Text>
+            </View>
+          )}
+        </View>
+
+        <View style={styles.countdownFooter}>
+          <View style={styles.countdownDateGroup}>
+            <FontAwesome name="calendar-o" size={12} color={theme.textSecondary} />
+            <Text style={[styles.countdownDate, { color: theme.textSecondary }]}>{formatDate(item.due_date ?? null)}</Text>
+          </View>
+          <TouchableOpacity onPress={() => onComplete(item.id!)}>
+            <FontAwesome name="check-circle" size={24} color={theme.success} />
+          </TouchableOpacity>
+        </View>
+      </Card>
     </Animated.View>
   );
 });
@@ -93,26 +97,32 @@ export default function DashboardScreen() {
   const { t } = useTranslation();
   const [events, setEvents] = useState<Partial<EventTask>[]>([]);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const router = useRouter();
   const colorScheme = useColorScheme();
-  const theme = Colors[colorScheme];
+  const theme = Colors[colorScheme ?? 'light'];
 
   useFocusEffect(
     useCallback(() => {
       loadDashboardData();
-      loadProfile();
+      loadProfileAndStats();
     }, [])
   );
 
-  const loadProfile = async () => {
+  const loadProfileAndStats = async () => {
     const { data: userData } = await getCurrentUser();
     if (userData?.user) {
-      const { data: profileData } = await getProfile(userData.user.id);
-      if (profileData) setProfile(profileData);
+      const [profileRes, statsRes] = await Promise.all([
+        getProfile(userData.user.id),
+        getDashboardStats()
+      ]);
+      
+      if (profileRes.data) setProfile(profileRes.data);
+      if (statsRes.data) setStats(statsRes.data);
     }
   };
 
@@ -150,12 +160,18 @@ export default function DashboardScreen() {
 
   const handleComplete = async (id: string) => {
     const { error } = await updateEventTask(id, { is_completed: true });
-    if (!error) loadDashboardData();
+    if (!error) {
+      loadDashboardData();
+      loadProfileAndStats(); // Refresh stats
+    }
   };
 
   const handleDelete = async (id: string) => {
     const { error } = await deleteEventTask(id);
-    if (!error) loadDashboardData();
+    if (!error) {
+      loadDashboardData();
+      loadProfileAndStats(); // Refresh stats
+    }
   };
 
   const formatDate = useCallback((dateStr: string | null) => {
@@ -177,7 +193,7 @@ export default function DashboardScreen() {
       theme={theme}
       t={t}
     />
-  ), [formatDate, theme, t]);
+  ), [formatDate, theme, t, handleDelete, handleComplete]);
 
   const renderCountdownItem = useCallback(({ item, index }: { item: Partial<EventTask>; index: number }) => (
     <CountdownItem 
@@ -189,7 +205,7 @@ export default function DashboardScreen() {
       theme={theme}
       t={t}
     />
-  ), [formatDate, theme, t]);
+  ), [formatDate, theme, t, handleDelete, handleComplete]);
 
   const countdowns = useMemo(() => events.filter(e => e.type === 'countdown'), [events]);
   const upcomingEvents = useMemo(() => events.filter(e => e.type === 'calendar_event'), [events]);
@@ -197,8 +213,8 @@ export default function DashboardScreen() {
   const LoadingSkeleton = () => (
     <View style={{ paddingHorizontal: 20 }}>
       {[1, 2, 3, 4].map((i) => (
-        <View key={i} style={styles.card}>
-          <Skeleton width={44} height={44} borderRadius={12} />
+        <View key={i} style={styles.cardSkeleton}>
+          <Skeleton width={48} height={48} borderRadius={12} />
           <View style={[styles.cardContent, { marginStart: 15 }]}>
             <Skeleton width="60%" height={16} style={{ marginBottom: 8 }} />
             <Skeleton width="40%" height={12} />
@@ -223,6 +239,8 @@ export default function DashboardScreen() {
       </Animated.View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+        <SummaryWidget stats={stats} theme={theme} />
+
         <View style={styles.sectionHeader}>
           <Text style={[styles.sectionTitle, { color: theme.text }]}>{t('dashboard.activeCountdowns')}</Text>
           {countdowns.length > 0 && (
@@ -234,8 +252,8 @@ export default function DashboardScreen() {
         
         {loading ? (
           <View style={{ flexDirection: 'row', paddingStart: 20 }}>
-            <Skeleton width={width * 0.7} height={120} borderRadius={24} style={{ marginEnd: 15 }} />
-            <Skeleton width={width * 0.7} height={120} borderRadius={24} />
+            <Skeleton width={width * 0.7} height={140} borderRadius={24} style={{ marginEnd: 15 }} />
+            <Skeleton width={width * 0.7} height={140} borderRadius={24} />
           </View>
         ) : countdowns.length === 0 ? (
           <View style={styles.emptyContainer}>
@@ -280,17 +298,20 @@ export default function DashboardScreen() {
             />
           </View>
         ) : (
-          <FlatList
-            data={upcomingEvents}
-            renderItem={renderEventItem}
-            keyExtractor={item => item.id!}
-            contentContainerStyle={styles.verticalList}
-            scrollEnabled={false}
-            showsVerticalScrollIndicator={false}
-            onEndReached={loadMoreData}
-            onEndReachedThreshold={0.5}
-            ListFooterComponent={isFetchingMore ? <Skeleton width="100%" height={50} style={{ marginVertical: 10 }} /> : null}
-          />
+          <View style={styles.verticalList}>
+            {upcomingEvents.map((item, index) => (
+              <EventItem 
+                key={item.id}
+                item={item} 
+                index={index} 
+                formatDate={formatDate} 
+                onDelete={handleDelete}
+                onComplete={handleComplete}
+                theme={theme}
+                t={t}
+              />
+            ))}
+          </View>
         )}
       </ScrollView>
 
@@ -361,9 +382,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   countdownCard: {
-    width: width * 0.7,
+    width: width * 0.75,
     padding: Spacing.lg,
-    borderRadius: BorderRadius.lg,
     marginEnd: Spacing.md,
     borderWidth: 1,
   },
@@ -403,16 +423,22 @@ const styles = StyleSheet.create({
   },
   verticalList: {
     paddingHorizontal: Spacing.lg,
-    paddingBottom: 100,
+    paddingBottom: 20,
     backgroundColor: 'transparent',
   },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: Spacing.md,
-    borderRadius: BorderRadius.lg,
     marginBottom: Spacing.md,
     borderWidth: 1,
+  },
+  cardSkeleton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.md,
+    marginBottom: Spacing.md,
+    backgroundColor: 'transparent',
   },
   countdownBody: {
     marginBottom: Spacing.md,

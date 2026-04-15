@@ -37,7 +37,13 @@
     "addEvent": "הוסף אירוע",
     "overdue": "באיחור",
     "daysLeft": "נותרו {{days}} ימים",
-    "no_date": "לא נקבע תאריך"
+    "no_date": "לא נקבע תאריך",
+    "stats": {
+      "activeCountdowns": "ספירה",
+      "upcomingEvents": "אירועים",
+      "totalClients": "לקוחות",
+      "completedRoutines": "בוצע"
+    }
   },
   "clients": {
     "title": "לקוחות",
@@ -71,6 +77,15 @@
     "customStep": "צעד מותאם אישית",
     "stepNamePlaceholder": "שם הצעד...",
     "pickStep": "בחר צעד",
+    "loadError": "לא ניתן לטעון את השגרה.",
+    "congrats": "כל הכבוד! 🎉",
+    "finishedMsg": "סיימת את השגרה הזו.",
+    "preview": "תצוגה מקדימה",
+    "startNow": "התחל עכשיו",
+    "finishAt": "סיום ב-{{time}}",
+    "stepCount": "שלב {{current}} / {{total}}",
+    "nextUp": "הבא: ",
+    "startRoutine": "התחל שגרה",
     "categories": {
       "morning": "☀️ שגרת בוקר",
       "evening": "🌙 שגרת ערב",
@@ -144,9 +159,29 @@
     "clientCreated": "הלקוח נוצר בהצלחה",
     "creationFailed": "היצירה נכשלה",
     "userNotAuth": "משתמש לא מחובר",
-    "save": "שמור"
+    "save": "שמור",
+    "title": "כותרת",
+    "category": "קטגוריה",
+    "dateAndTime": "תאריך ושעה",
+    "priority": "עדיפות",
+    "description": "תיאור",
+    "eventTitleRequired": "אנא הזן כותרת",
+    "invalidDate": "אנא בחר תאריך ושעה חוקיים.",
+    "eventSaved": "הנסיון נשמר בהצלחה"
   },
   "placeholders": {
-    "clientName": "לדוגמה: ישראל ישראלי"
+    "clientName": "לדוגמה: ישראל ישראלי",
+    "eventTitle": "לדוגמה: דיון בבית המשפט"
+  },
+  "categories": {
+    "countdown": "ספירה לאחור",
+    "calendar_event": "אירוע",
+    "reminder": "תזכורת"
+  },
+  "priorities": {
+    "low": "נמוכה",
+    "medium": "בינונית",
+    "high": "גבוהה",
+    "urgent": "דחופה"
   }
 }

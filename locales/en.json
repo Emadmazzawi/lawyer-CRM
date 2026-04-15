@@ -37,7 +37,13 @@
     "addEvent": "Add Event",
     "overdue": "OVERDUE",
     "daysLeft": "{{days}} days left",
-    "no_date": "No date set"
+    "no_date": "No date set",
+    "stats": {
+      "activeCountdowns": "Countdowns",
+      "upcomingEvents": "Events",
+      "totalClients": "Clients",
+      "completedRoutines": "Done"
+    }
   },
   "clients": {
     "title": "Clients",
@@ -71,6 +77,15 @@
     "customStep": "CUSTOM STEP",
     "stepNamePlaceholder": "Step name...",
     "pickStep": "PICK STEP",
+    "loadError": "Could not load the routine.",
+    "congrats": "Congrats! 🎉",
+    "finishedMsg": "You have finished this routine.",
+    "preview": "Routine Preview",
+    "startNow": "Start now",
+    "finishAt": "Finish at {{time}}",
+    "stepCount": "Step {{current}} / {{total}}",
+    "nextUp": "Next: ",
+    "startRoutine": "START ROUTINE",
     "categories": {
       "morning": "☀️ Morning Routine",
       "evening": "🌙 Evening Routine",
@@ -144,9 +159,29 @@
     "clientCreated": "Client created successfully",
     "creationFailed": "Creation Failed",
     "userNotAuth": "User not authenticated",
-    "save": "Save"
+    "save": "Save",
+    "title": "Title",
+    "category": "Category",
+    "dateAndTime": "Date and Time",
+    "priority": "Priority",
+    "description": "Description",
+    "eventTitleRequired": "Please enter a title",
+    "invalidDate": "Please select a valid date and time.",
+    "eventSaved": "Entry saved successfully"
   },
   "placeholders": {
-    "clientName": "e.g. John Doe"
+    "clientName": "e.g. John Doe",
+    "eventTitle": "e.g. Court Hearing"
+  },
+  "categories": {
+    "countdown": "Countdown",
+    "calendar_event": "Event",
+    "reminder": "Reminder"
+  },
+  "priorities": {
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High",
+    "urgent": "Urgent"
   }
 }

@@ -37,7 +37,13 @@
     "addEvent": "إضافة حدث",
     "overdue": "متأخر",
     "daysLeft": "متبقي {{days}} أيام",
-    "no_date": "لم يتم تحديد تاريخ"
+    "no_date": "لم يتم تحديد تاريخ",
+    "stats": {
+      "activeCountdowns": "عد تنازلي",
+      "upcomingEvents": "أحداث",
+      "totalClients": "عملاء",
+      "completedRoutines": "تم"
+    }
   },
   "clients": {
     "title": "العملاء",
@@ -71,6 +77,15 @@
     "customStep": "خطوة مخصصة",
     "stepNamePlaceholder": "اسم الخطوة...",
     "pickStep": "اختر الخطوة",
+    "loadError": "تعذر تحميل الروتين.",
+    "congrats": "تهانينا! 🎉",
+    "finishedMsg": "لقد انتهيت من هذا الروتين.",
+    "preview": "معاينة الروتين",
+    "startNow": "ابدأ الآن",
+    "finishAt": "الانتهاء في {{time}}",
+    "stepCount": "خطوة {{current}} / {{total}}",
+    "nextUp": "التالي: ",
+    "startRoutine": "بدء الروتين",
     "categories": {
       "morning": "☀️ روتين الصباح",
       "evening": "🌙 روتين المساء",
@@ -144,9 +159,29 @@
     "clientCreated": "تم إنشاء العميل بنجاح",
     "creationFailed": "فشل الإنشاء",
     "userNotAuth": "المستخدم غير مصرح له",
-    "save": "حفظ"
+    "save": "حفظ",
+    "title": "العنوان",
+    "category": "الفئة",
+    "dateAndTime": "التاريخ والوقت",
+    "priority": "الأولوية",
+    "description": "الوصف",
+    "eventTitleRequired": "يرجى إدخال عنوان",
+    "invalidDate": "يرجى اختيار تاريخ ووقت صالحين.",
+    "eventSaved": "تم الحفظ بنجاح"
   },
   "placeholders": {
-    "clientName": "مثال: أحمد محمد"
+    "clientName": "مثال: أحمد محمد",
+    "eventTitle": "مثال: جلسة محكمة"
+  },
+  "categories": {
+    "countdown": "عد تنازلي",
+    "calendar_event": "حدث",
+    "reminder": "تذكير"
+  },
+  "priorities": {
+    "low": "منخفضة",
+    "medium": "متوسطة",
+    "high": "عالية",
+    "urgent": "عاجلة"
   }
 }

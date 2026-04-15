@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingVertical: 12,
     borderRadius: BorderRadius.pill,
-    marginLeft: 'auto',
+    marginStart: 'auto',
   },
   orText: {
     fontFamily: Fonts.medium,
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
   },
   stepEmoji: {
     fontSize: 24,
-    marginRight: Spacing.md,
+    marginEnd: Spacing.md,
     width: 32,
   },
   stepTitle: {
