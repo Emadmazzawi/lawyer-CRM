@@ -24,6 +24,7 @@ import { View, Text } from '@/components/Themed';
 import { Skeleton } from '@/components/Skeleton';
 import { RoutineCard } from '@/components/RoutineCard';
 import * as Haptics from 'expo-haptics';
+import { syncRoutineNotifications } from '@/src/lib/notifications';
 
 const DAY_MAP: Record<number, string> = { 0: 'Sun', 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat' };
 
@@ -69,7 +70,11 @@ export default function RoutinesScreen() {
       if (routineRes.error) throw routineRes.error;
       console.log('--- [Debug] Routines loaded:', routineRes.data?.length);
       
-      if (routineRes.data) setRoutines(routineRes.data);
+      if (routineRes.data) {
+        setRoutines(routineRes.data);
+        // Fire-and-forget sync of push notifications for routines
+        syncRoutineNotifications(routineRes.data).catch(err => console.warn('Failed to sync notifications', err));
+      }
       if (completionRes.data) setCompletions(completionRes.data);
       if (stepCompletionRes.data) setStepCompletions(stepCompletionRes.data);
     } catch (error: any) {
@@ -312,11 +317,16 @@ export default function RoutinesScreen() {
   };
 
   const filteredRoutines = useMemo(() => {
-    return routines.filter(r => {
+    const selectedDayValue = selectedDate.getDay(); // 0 = Sun, 1 = Mon ...
+    return routines.map(r => {
+      // Filter steps for the current day
+      const dailySteps = (r.steps || []).filter(s => s.day_of_week === null || s.day_of_week === selectedDayValue);
+      return { ...r, steps: dailySteps };
+    }).filter(r => {
       const matchType = r.schedule_type === tab || (!r.schedule_type && tab === 'scheduled');
       if (!isToday(selectedDate) && r.schedule_type === 'flexible') return isRoutineDone(r.id);
       const matchDay = tab === 'flexible' || !r.active_days || (Array.isArray(r.active_days) && r.active_days.includes(todayKey));
-      return matchType && matchDay;
+      return matchType && matchDay && r.steps.length > 0; // optionally hide routines with 0 steps today
     });
   }, [routines, tab, selectedDate, todayKey, isRoutineDone]);
 

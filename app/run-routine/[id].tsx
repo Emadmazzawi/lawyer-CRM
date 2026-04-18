@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, TouchableOpacity, ActivityIndicator, Alert, Dimensions, ScrollView } from 'react-native';
+import { StyleSheet, TouchableOpacity, ActivityIndicator, Alert, Dimensions, ScrollView, Switch } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -35,6 +35,7 @@ export default function RunRoutineScreen() {
   const [steps, setSteps] = useState<RoutineStep[]>([]);
   const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState<ScreenMode>('preview');
+  const [isDeepFocus, setIsDeepFocus] = useState(false);
 
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
@@ -52,10 +53,14 @@ export default function RunRoutineScreen() {
         router.back();
         return;
       }
+      
+      const currentDayValue = new Date().getDay();
+      const dailySteps = data.steps.filter(s => s.day_of_week === null || s.day_of_week === currentDayValue);
+
       setRoutine(data.routine);
-      setSteps(data.steps);
-      if (data.steps.length > 0) {
-        setTimeLeft(data.steps[0].duration_in_seconds);
+      setSteps(dailySteps);
+      if (dailySteps.length > 0) {
+        setTimeLeft(dailySteps[0].duration_in_seconds);
       }
       setLoading(false);
     };
@@ -119,6 +124,26 @@ export default function RunRoutineScreen() {
   const startRoutine = () => {
     setMode('running');
     setIsRunning(true);
+  };
+
+  const handleCloseRunning = () => {
+    if (isDeepFocus && isRunning) {
+      Alert.alert(
+        t('routines.deepFocusWarning', 'Deep Focus Active'),
+        t('routines.deepFocusMessage', 'You are in Deep Focus mode. Are you sure you want to exit?'),
+        [
+          { text: t('common.cancel', 'Cancel'), style: 'cancel' },
+          { text: t('common.exit', 'Exit'), style: 'destructive', onPress: () => {
+              setIsRunning(false);
+              setMode('preview');
+            } 
+          }
+        ]
+      );
+    } else {
+      setIsRunning(false);
+      setMode('preview');
+    }
   };
 
   const formatTime = (seconds: number) => {
@@ -214,6 +239,17 @@ export default function RunRoutineScreen() {
               <Text style={[styles.bottomPillText, { color: theme.textSecondary }]}>{t('routines.finishAt', { time: finishTime })}</Text>
             </View>
           </View>
+
+          <View style={styles.deepFocusRow}>
+            <Text style={[styles.deepFocusLabel, { color: theme.text }]}>{t('routines.deepFocusMode', 'Deep Focus Mode')}</Text>
+            <Switch 
+              value={isDeepFocus} 
+              onValueChange={setIsDeepFocus} 
+              trackColor={{ true: theme.maroon, false: theme.border }} 
+              thumbColor="#fff" 
+            />
+          </View>
+
           <PrimaryButton 
             title={t('routines.startRoutine', 'START ROUTINE')}
             onPress={startRoutine}
@@ -229,7 +265,7 @@ export default function RunRoutineScreen() {
   return (
     <View style={[styles.container, { backgroundColor: theme.background, padding: Spacing.lg }]}>
       <View style={styles.runningHeader}>
-        <TouchableOpacity onPress={() => setMode('preview')} style={styles.iconBtn}>
+        <TouchableOpacity onPress={handleCloseRunning} style={styles.iconBtn}>
           <FontAwesome name="close" size={20} color={theme.text} />
         </TouchableOpacity>
         <View style={{ alignItems: 'center', backgroundColor: 'transparent' }}>
@@ -267,13 +303,17 @@ export default function RunRoutineScreen() {
       </View>
 
       <View style={styles.controlsContainer}>
-        <TouchableOpacity
-          style={[styles.smallBtn, currentStepIndex === 0 && { opacity: 0.2 }]}
-          onPress={handlePrevStep}
-          disabled={currentStepIndex === 0}
-        >
-          <FontAwesome name="backward" size={24} color={theme.text} />
-        </TouchableOpacity>
+        {!isDeepFocus ? (
+          <TouchableOpacity
+            style={[styles.smallBtn, currentStepIndex === 0 && { opacity: 0.2 }]}
+            onPress={handlePrevStep}
+            disabled={currentStepIndex === 0}
+          >
+            <FontAwesome name="backward" size={24} color={theme.text} />
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.smallBtn} />
+        )}
 
         <TouchableOpacity 
           style={[styles.playPauseBtn, { backgroundColor: theme.maroon }]} 
@@ -288,12 +328,16 @@ export default function RunRoutineScreen() {
           />
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.smallBtn]}
-          onPress={handleNextStep}
-        >
-          <FontAwesome name="forward" size={24} color={theme.text} />
-        </TouchableOpacity>
+        {!isDeepFocus ? (
+          <TouchableOpacity
+            style={[styles.smallBtn]}
+            onPress={handleNextStep}
+          >
+            <FontAwesome name="forward" size={24} color={theme.text} />
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.smallBtn} />
+        )}
       </View>
     </View>
   );
@@ -420,6 +464,20 @@ const styles = StyleSheet.create({
   bottomPillText: {
     fontFamily: Fonts.bold,
     fontSize: 13,
+  },
+  deepFocusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: BorderRadius.md,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    marginBottom: Spacing.xl,
+  },
+  deepFocusLabel: {
+    fontFamily: Fonts.semiBold,
+    fontSize: 15,
   },
 
   // ── Running Mode ──

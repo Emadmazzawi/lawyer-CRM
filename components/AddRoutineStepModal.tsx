@@ -4,6 +4,9 @@ import { FontAwesome } from '@expo/vector-icons';
 import { Fonts, BorderRadius, Spacing } from '@/constants/Theme';
 import { useTranslation } from 'react-i18next';
 
+import { AdaptiveDateTimePicker } from '@/components/AdaptiveDateTimePicker';
+import { format } from 'date-fns';
+
 type StepTemplate = {
   emoji: string;
   title: string;
@@ -14,7 +17,7 @@ type StepTemplate = {
 type Props = {
   visible: boolean;
   onClose: () => void;
-  onSelectStep: (step: { emoji: string; title: string; duration_in_seconds: number }) => void;
+  onSelectStep: (step: { emoji: string; title: string; duration_in_seconds: number; start_time?: string | null }) => void;
   theme: any;
 };
 
@@ -25,6 +28,7 @@ export default function AddRoutineStepModal({ visible, onClose, onSelectStep, th
   const [customTitle, setCustomTitle] = useState('');
   const [customEmoji, setCustomEmoji] = useState('⭐');
   const [customDuration, setCustomDuration] = useState('5');
+  const [customStartTime, setCustomStartTime] = useState<Date | null>(null);
 
   const CATEGORIES = [
     { label: t('routines.categories.morning'), value: 'morning' },
@@ -73,9 +77,11 @@ export default function AddRoutineStepModal({ visible, onClose, onSelectStep, th
       emoji: customEmoji,
       title: customTitle,
       duration_in_seconds: (parseInt(customDuration) || 5) * 60,
+      start_time: customStartTime ? format(customStartTime, 'HH:mm') : null,
     });
     setCustomTitle('');
     setCustomDuration('5');
+    setCustomStartTime(null);
     setShowCustom(false);
     onClose();
   };
@@ -125,6 +131,18 @@ export default function AddRoutineStepModal({ visible, onClose, onSelectStep, th
                   keyboardType="number-pad"
                 />
                 <Text style={{ color: theme.textSecondary, fontFamily: Fonts.medium }}>{t('common.min')}</Text>
+                
+                <View style={{ flex: 1 }}>
+                  <AdaptiveDateTimePicker
+                    mode="time"
+                    value={customStartTime}
+                    onChange={setCustomStartTime}
+                    theme={theme}
+                    showLabel={false}
+                    placeholder="Start Time (Optional)"
+                  />
+                </View>
+
                 <TouchableOpacity style={[styles.addCustomBtn, { backgroundColor: theme.maroon }]} onPress={handleCustomStep}>
                   <Text style={{ color: '#FFF', fontFamily: Fonts.bold }}>{t('common.add')}</Text>
                 </TouchableOpacity>
@@ -243,7 +261,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingVertical: 12,
     borderRadius: BorderRadius.pill,
-    marginStart: 'auto',
   },
   orText: {
     fontFamily: Fonts.medium,

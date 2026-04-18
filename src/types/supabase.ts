@@ -203,6 +203,8 @@ export interface Database {
           duration_in_seconds: number
           order_index: number
           emoji: string | null
+          day_of_week: number | null
+          start_time: string | null
         }
         Insert: {
           id?: string
@@ -211,6 +213,8 @@ export interface Database {
           duration_in_seconds: number
           order_index: number
           emoji?: string | null
+          day_of_week?: number | null
+          start_time?: string | null
         }
         Update: {
           id?: string
@@ -219,6 +223,8 @@ export interface Database {
           duration_in_seconds?: number
           order_index?: number
           emoji?: string | null
+          day_of_week?: number | null
+          start_time?: string | null
         }
       }
       routine_completions: {

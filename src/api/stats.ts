@@ -50,3 +50,17 @@ export const getDashboardStats = async (): Promise<{ data: DashboardStats | null
     return { data: null, error };
   }
 };
+
+export const fetchAllRoutineCompletions = async (): Promise<{ data: { date_string: string }[] | null, error: any }> => {
+  try {
+    const { data, error } = await supabase
+      .from('routine_completions')
+      .select('date_string')
+      .order('date_string', { ascending: true });
+    
+    return { data: data as { date_string: string }[] | null, error };
+  } catch (error) {
+    console.error('Error fetching routine completions:', error);
+    return { data: null, error };
+  }
+};

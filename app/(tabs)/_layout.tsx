@@ -158,6 +158,15 @@ export default function DrawerLayout() {
         }}
       />
       <Drawer.Screen
+        name="stats"
+        options={{
+          drawerLabel: 'Stats & Streaks',
+          title: 'Stats & Streaks',
+          drawerIcon: ({ color, focused }) => <DrawerIcon name="line-chart" color={focused ? '#FFF' : color} />,
+          drawerActiveTintColor: '#FFF',
+        }}
+      />
+      <Drawer.Screen
         name="completed"
         options={{
           drawerLabel: t('tabs.history'),

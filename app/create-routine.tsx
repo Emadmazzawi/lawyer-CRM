@@ -9,6 +9,7 @@ import Colors from '@/constants/Colors';
 import { Fonts, BorderRadius, Spacing } from '@/constants/Theme';
 import AddRoutineStepModal from '@/components/AddRoutineStepModal';
 import { AdaptiveDateTimePicker } from '@/components/AdaptiveDateTimePicker';
+import DraggableFlatList, { ScaleDecorator, RenderItemParams } from 'react-native-draggable-flatlist';
 import { format } from 'date-fns';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -30,9 +31,11 @@ export default function CreateRoutineScreen() {
 
   const [title, setTitle] = useState('Morning Routine');
   const [selectedPreset, setSelectedPreset] = useState('Morning Routine');
-  const [steps, setSteps] = useState<{ emoji: string; title: string; duration_in_seconds: number }[]>([]);
+  const [steps, setSteps] = useState<{ id: string; emoji: string; title: string; duration_in_seconds: number; day_of_week?: number | null; start_time?: string | null }[]>([]);
   const [loading, setLoading] = useState(false);
   const [showStepModal, setShowStepModal] = useState(false);
+  const [isWeeklyCalendar, setIsWeeklyCalendar] = useState(false);
+  const [selectedCalendarDay, setSelectedCalendarDay] = useState(1); // 1 = Mon
 
   // Schedule state
   const [reminderTime, setReminderTime] = useState<Date | null>(null);
@@ -48,12 +51,12 @@ export default function CreateRoutineScreen() {
     );
   };
 
-  const handleRemoveStep = (index: number) => {
-    setSteps(steps.filter((_, i) => i !== index));
+  const handleRemoveStep = (idToRemove: string) => {
+    setSteps(steps.filter(s => s.id !== idToRemove));
   };
 
-  const handleAddStep = (step: { emoji: string; title: string; duration_in_seconds: number }) => {
-    setSteps(prev => [...prev, step]);
+  const handleAddStep = (step: { emoji: string; title: string; duration_in_seconds: number; start_time?: string | null }) => {
+    setSteps(prev => [...prev, { ...step, id: Date.now().toString() + Math.random(), day_of_week: isWeeklyCalendar ? selectedCalendarDay : null }]);
   };
 
   const handlePresetSelect = (presetValue: string) => {
@@ -82,6 +85,8 @@ export default function CreateRoutineScreen() {
       duration_in_seconds: s.duration_in_seconds,
       order_index: index,
       emoji: s.emoji,
+      day_of_week: isWeeklyCalendar ? (s.day_of_week ?? null) : null,
+      start_time: s.start_time ?? null,
     }));
 
     const { error } = await createRoutine(title, '', formattedSteps, {
@@ -101,162 +106,233 @@ export default function CreateRoutineScreen() {
     }
   };
 
-  return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Header with close & total */}
-        <View style={styles.topRow}>
-          <TouchableOpacity onPress={() => router.back()}>
-            <FontAwesome name="times" size={22} color={theme.text} />
-          </TouchableOpacity>
-          <View style={[styles.totalBadge, { backgroundColor: theme.surfaceElevated }]}>
-            <Text style={[styles.totalBadgeText, { color: theme.text }]}>{totalMinutes}m total</Text>
+  const renderHeader = () => (
+    <View style={{ backgroundColor: 'transparent' }}>
+      {/* Header with close & total */}
+      <View style={styles.topRow}>
+        <TouchableOpacity onPress={() => router.back()}>
+          <FontAwesome name="times" size={22} color={theme.text} />
+        </TouchableOpacity>
+        <View style={[styles.totalBadge, { backgroundColor: theme.surfaceElevated }]}>
+          <Text style={[styles.totalBadgeText, { color: theme.text }]}>{totalMinutes}m total</Text>
+        </View>
+      </View>
+
+      {/* Routine Name / Preset */}
+      <Text style={[styles.label, { color: theme.textSecondary }]}>Routine Type</Text>
+      
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.presetScroll} contentContainerStyle={{ gap: 8, paddingHorizontal: 4, paddingBottom: 16 }}>
+        {ROUTINE_PRESETS.map(preset => (
+          <Pressable
+            key={preset.value}
+            style={[
+              styles.categoryPill,
+              { backgroundColor: theme.surfaceElevated, borderColor: theme.border },
+              selectedPreset === preset.value && { backgroundColor: theme.maroon, borderColor: theme.maroon },
+            ]}
+            onPress={() => handlePresetSelect(preset.value)}
+          >
+            <Text style={[
+              styles.categoryPillText,
+              { color: theme.textSecondary },
+              selectedPreset === preset.value && { color: '#FFF' },
+            ]}>
+              {preset.label}
+            </Text>
+          </Pressable>
+        ))}
+      </ScrollView>
+
+      {selectedPreset === 'custom' && (
+        <View style={{ marginBottom: Spacing.sm, backgroundColor: 'transparent' }}>
+          <Text style={[styles.label, { color: theme.textSecondary }]}>Custom Name</Text>
+          <TextInput
+            style={[styles.nameInput, { color: theme.text, backgroundColor: theme.surfaceElevated, borderColor: theme.border }]}
+            placeholder="e.g. Weekend Routine"
+            placeholderTextColor={theme.textMuted}
+            value={title}
+            onChangeText={setTitle}
+            maxLength={35}
+          />
+          <Text style={[styles.charCount, { color: theme.textMuted }]}>{title.length}/35</Text>
+        </View>
+      )}
+
+      {/* Schedule Card */}
+      <Text style={[styles.label, { color: theme.textSecondary }]}>Schedule</Text>
+      <View style={[styles.scheduleCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+
+        {/* Reminder Section */}
+        <AdaptiveDateTimePicker
+          mode="time"
+          value={reminderTime}
+          onChange={setReminderTime}
+          theme={theme}
+          showLabel={false}
+          placeholder="No reminder set"
+        />
+
+        <View style={[styles.divider, { backgroundColor: theme.border }]} />
+
+        {/* Alarm Row */}
+        <View style={styles.scheduleRow}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'transparent' }}>
+            <FontAwesome name="bell" size={18} color={theme.textSecondary} style={{ marginEnd: 12 }} />
+            <View style={{ backgroundColor: 'transparent' }}>
+              <Text style={[styles.scheduleLabel, { color: theme.text }]}>Alarm</Text>
+              <Text style={[styles.scheduleSub, { color: theme.textMuted }]}>Rings until you dismiss</Text>
+            </View>
           </View>
+          <Switch
+            value={alarmEnabled}
+            onValueChange={setAlarmEnabled}
+            trackColor={{ false: theme.border, true: theme.maroon }}
+            thumbColor="#FFF"
+          />
         </View>
 
-        {/* Routine Name / Preset */}
-        <Text style={[styles.label, { color: theme.textSecondary }]}>Routine Type</Text>
-        
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.presetScroll} contentContainerStyle={{ gap: 8, paddingHorizontal: 4, paddingBottom: 16 }}>
-          {ROUTINE_PRESETS.map(preset => (
-            <Pressable
-              key={preset.value}
+        <View style={[styles.divider, { backgroundColor: theme.border }]} />
+
+        {/* Day Selector */}
+        <View style={styles.daysRow}>
+          {DAYS.map(day => (
+            <TouchableOpacity
+              key={day}
               style={[
-                styles.categoryPill,
-                { backgroundColor: theme.surfaceElevated, borderColor: theme.border },
-                selectedPreset === preset.value && { backgroundColor: theme.maroon, borderColor: theme.maroon },
+                styles.dayPill,
+                { borderColor: theme.border, backgroundColor: theme.surface },
+                activeDays.includes(day) && { backgroundColor: theme.maroon, borderColor: theme.maroon },
               ]}
-              onPress={() => handlePresetSelect(preset.value)}
+              onPress={() => toggleDay(day)}
             >
               <Text style={[
-                styles.categoryPillText,
+                styles.dayPillText,
                 { color: theme.textSecondary },
-                selectedPreset === preset.value && { color: '#FFF' },
+                activeDays.includes(day) && { color: '#FFF' },
               ]}>
-                {preset.label}
+                {day}
               </Text>
-            </Pressable>
+            </TouchableOpacity>
           ))}
-        </ScrollView>
+        </View>
 
-        {selectedPreset === 'custom' && (
-          <View style={{ marginBottom: Spacing.sm }}>
-            <Text style={[styles.label, { color: theme.textSecondary }]}>Custom Name</Text>
-            <TextInput
-              style={[styles.nameInput, { color: theme.text, backgroundColor: theme.surfaceElevated, borderColor: theme.border }]}
-              placeholder="e.g. Weekend Routine"
-              placeholderTextColor={theme.textMuted}
-              value={title}
-              onChangeText={setTitle}
-              maxLength={35}
-            />
-            <Text style={[styles.charCount, { color: theme.textMuted }]}>{title.length}/35</Text>
-          </View>
-        )}
+        <View style={{ alignItems: 'center', marginVertical: 10, backgroundColor: 'transparent' }}>
+          <Text style={[styles.orText, { color: theme.textMuted }]}>or</Text>
+        </View>
 
-        {/* Schedule Card */}
-        <Text style={[styles.label, { color: theme.textSecondary }]}>Schedule</Text>
-        <View style={[styles.scheduleCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-
-          {/* Reminder Section */}
-          <AdaptiveDateTimePicker
-            mode="time"
-            value={reminderTime}
-            onChange={setReminderTime}
-            theme={theme}
-            showLabel={false}
-            placeholder="No reminder set"
+        {/* Flexible Toggle */}
+        <View style={[styles.flexibleRow, { backgroundColor: 'transparent' }]}>
+          <Text style={[styles.scheduleLabel, { color: theme.text }]}>Flexible</Text>
+          <Switch
+            value={isFlexible}
+            onValueChange={setIsFlexible}
+            trackColor={{ false: theme.border, true: theme.maroon }}
+            thumbColor="#FFF"
           />
+        </View>
+      </View>
 
-          <View style={[styles.divider, { backgroundColor: theme.border }]} />
+      {/* Steps Mode Toggle */}
+      <View style={styles.stepsHeaderRow}>
+        <Text style={[styles.stepsCount, { color: theme.text }]}>{steps.length} steps</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'transparent' }}>
+          <Text style={[styles.reorderHint, { color: theme.textSecondary, marginRight: 8 }]}>Weekly View</Text>
+          <Switch
+            value={isWeeklyCalendar}
+            onValueChange={(val) => setIsWeeklyCalendar(val)}
+            trackColor={{ false: theme.border, true: theme.maroon }}
+            thumbColor="#FFF"
+          />
+        </View>
+      </View>
 
-          {/* Alarm Row */}
-          <View style={styles.scheduleRow}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'transparent' }}>
-              <FontAwesome name="bell" size={18} color={theme.textSecondary} style={{ marginEnd: 12 }} />
-              <View style={{ backgroundColor: 'transparent' }}>
-                <Text style={[styles.scheduleLabel, { color: theme.text }]}>Alarm</Text>
-                <Text style={[styles.scheduleSub, { color: theme.textMuted }]}>Rings until you dismiss</Text>
-              </View>
-            </View>
-            <Switch
-              value={alarmEnabled}
-              onValueChange={setAlarmEnabled}
-              trackColor={{ false: theme.border, true: theme.maroon }}
-              thumbColor="#FFF"
-            />
-          </View>
-
-          <View style={[styles.divider, { backgroundColor: theme.border }]} />
-
-          {/* Day Selector */}
-          <View style={styles.daysRow}>
-            {DAYS.map(day => (
+      {isWeeklyCalendar && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: Spacing.md }} contentContainerStyle={{ gap: 8 }}>
+          {DAYS.map((day, idx) => {
+            const dayValue = day === 'Sun' ? 0 : idx + 1;
+            const isSelected = selectedCalendarDay === dayValue;
+            return (
               <TouchableOpacity
                 key={day}
                 style={[
                   styles.dayPill,
                   { borderColor: theme.border, backgroundColor: theme.surface },
-                  activeDays.includes(day) && { backgroundColor: theme.maroon, borderColor: theme.maroon },
+                  isSelected && { backgroundColor: theme.maroon, borderColor: theme.maroon }
                 ]}
-                onPress={() => toggleDay(day)}
+                onPress={() => setSelectedCalendarDay(dayValue)}
               >
-                <Text style={[
-                  styles.dayPillText,
-                  { color: theme.textSecondary },
-                  activeDays.includes(day) && { color: '#FFF' },
-                ]}>
-                  {day}
-                </Text>
+                <Text style={[styles.dayPillText, { color: theme.textSecondary }, isSelected && { color: '#FFF' }]}>{day}</Text>
               </TouchableOpacity>
-            ))}
-          </View>
+            );
+          })}
+        </ScrollView>
+      )}
+    </View>
+  );
 
-          <View style={{ alignItems: 'center', marginVertical: 10, backgroundColor: 'transparent' }}>
-            <Text style={[styles.orText, { color: theme.textMuted }]}>or</Text>
-          </View>
+  const renderFooter = () => (
+    <View style={{ backgroundColor: 'transparent' }}>
+      <TouchableOpacity
+        style={[styles.addStepDashed, { backgroundColor: theme.background, borderColor: theme.border }]}
+        onPress={() => setShowStepModal(true)}
+      >
+        <FontAwesome name="plus" size={14} color={theme.textMuted} style={{ marginEnd: 8 }} />
+        <Text style={[styles.addStepText, { color: theme.textMuted }]}>Add step</Text>
+      </TouchableOpacity>
+      <View style={{ height: 100, backgroundColor: 'transparent' }} />
+    </View>
+  );
 
-          {/* Flexible Toggle */}
-          <View style={[styles.flexibleRow, { backgroundColor: 'transparent' }]}>
-            <Text style={[styles.scheduleLabel, { color: theme.text }]}>Flexible</Text>
-            <Switch
-              value={isFlexible}
-              onValueChange={setIsFlexible}
-              trackColor={{ false: theme.border, true: theme.maroon }}
-              thumbColor="#FFF"
-            />
-          </View>
+  const visibleSteps = steps.filter(s => !isWeeklyCalendar || s.day_of_week === selectedCalendarDay);
+  const hiddenSteps = steps.filter(s => isWeeklyCalendar && s.day_of_week !== selectedCalendarDay);
+
+  const renderStepItem = ({ item, drag, isActive }: RenderItemParams<any>) => (
+    <ScaleDecorator>
+      <TouchableOpacity
+        activeOpacity={0.9}
+        onLongPress={drag}
+        disabled={isActive}
+        style={[
+          styles.stepItem,
+          { borderColor: theme.border, backgroundColor: theme.surface },
+          isActive && { backgroundColor: theme.surfaceElevated, transform: [{ scale: 1.02 }], zIndex: 10, shadowOpacity: 0.1, shadowRadius: 10 }
+        ]}
+      >
+        <Text style={styles.stepEmoji}>{item.emoji}</Text>
+        <View style={{ flex: 1, backgroundColor: 'transparent' }}>
+          <Text style={[styles.stepTitle, { color: theme.text }]}>{item.title}</Text>
+          {item.start_time && (
+            <Text style={[styles.stepStartTime, { color: theme.textSecondary }]}>
+              <FontAwesome name="clock-o" size={12} color={theme.textSecondary} /> {item.start_time}
+            </Text>
+          )}
         </View>
-
-        {/* Steps */}
-        <View style={styles.stepsHeaderRow}>
-          <Text style={[styles.stepsCount, { color: theme.text }]}>{steps.length} steps</Text>
-          <Text style={[styles.reorderHint, { color: theme.textMuted }]}>Press & hold step to reorder</Text>
+        <Text style={[styles.stepDuration, { color: theme.textMuted, marginRight: 10 }]}>{Math.round(item.duration_in_seconds / 60)} min</Text>
+        
+        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'transparent' }}>
+          <TouchableOpacity onPressIn={drag} style={{ padding: 8 }}>
+            <FontAwesome name="bars" size={18} color={theme.textMuted} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => handleRemoveStep(item.id)} style={{ padding: 8 }}>
+            <FontAwesome name="times-circle" size={18} color={theme.textMuted} />
+          </TouchableOpacity>
         </View>
+      </TouchableOpacity>
+    </ScaleDecorator>
+  );
 
-        {steps.map((step, index) => (
-          <View key={index} style={[styles.stepItem, { borderColor: theme.border, backgroundColor: theme.surface }]}>
-            <Text style={styles.stepEmoji}>{step.emoji}</Text>
-            <View style={{ flex: 1, backgroundColor: 'transparent' }}>
-              <Text style={[styles.stepTitle, { color: theme.text }]}>{step.title}</Text>
-            </View>
-            <Text style={[styles.stepDuration, { color: theme.textMuted }]}>{Math.round(step.duration_in_seconds / 60)} min</Text>
-            <TouchableOpacity onPress={() => handleRemoveStep(index)} style={{ paddingStart: 10 }}>
-              <FontAwesome name="times-circle" size={18} color={theme.textMuted} />
-            </TouchableOpacity>
-          </View>
-        ))}
-
-        {/* Add Step (dashed) */}
-        <TouchableOpacity
-          style={[styles.addStepDashed, { backgroundColor: theme.background, borderColor: theme.border }]}
-          onPress={() => setShowStepModal(true)}
-        >
-          <FontAwesome name="plus" size={14} color={theme.textMuted} style={{ marginEnd: 8 }} />
-          <Text style={[styles.addStepText, { color: theme.textMuted }]}>Add step</Text>
-        </TouchableOpacity>
-
-      </ScrollView>
+  return (
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <DraggableFlatList
+        data={visibleSteps}
+        keyExtractor={(item) => item.id}
+        onDragEnd={({ data }) => setSteps([...data, ...hiddenSteps])}
+        renderItem={renderStepItem}
+        ListHeaderComponent={renderHeader}
+        ListFooterComponent={renderFooter}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      />
 
       {/* Bottom CTA */}
       <Pressable
@@ -408,6 +484,11 @@ const styles = StyleSheet.create({
   stepDuration: {
     fontFamily: Fonts.medium,
     fontSize: 13,
+  },
+  stepStartTime: {
+    fontFamily: Fonts.medium,
+    fontSize: 12,
+    marginTop: 2,
   },
   addStepDashed: {
     flexDirection: 'row',
